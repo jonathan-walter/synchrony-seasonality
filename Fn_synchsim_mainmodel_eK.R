@@ -1,5 +1,5 @@
-synchsim_sameEnv<-function(r, Kb, Kw, rho.b, sd.b, Db=0, Dw=0, tmax=100, nlocs=2,
-                               ret.Bt=TRUE, ret.eb=FALSE)
+synchsim_main<-function(r, Kb, Kw, rho.b, rho.w, sd.b, sd.w, Db=0, Dw=0, tmax=100, nlocs=2,
+                               ret.Bt=TRUE, ret.eb=FALSE, ret.ew=FALSE)
 {
   
   #initialize state variables
@@ -18,7 +18,7 @@ synchsim_sameEnv<-function(r, Kb, Kw, rho.b, sd.b, Db=0, Dw=0, tmax=100, nlocs=2
   }
   
   eb<-synchts(rho.b, sd.b, nlocs, tmax)
-  #ew<-synchts(rho.w, sd.w, nlocs, tmax)
+  ew<-synchts(rho.w, sd.w, nlocs, tmax)
   
   #set up dispersal matrices
   Dmat.b<-matrix(Db/nlocs, nlocs, nlocs); diag(Dmat.b)<-1-Db
@@ -26,11 +26,11 @@ synchsim_sameEnv<-function(r, Kb, Kw, rho.b, sd.b, Db=0, Dw=0, tmax=100, nlocs=2
   
   #run model
   for(tt in 2:tmax){
-    Bt[,tt] = Nt[,(tt-1)]*exp(r*(1-(Nt[,(tt-1)]/Kb))) + eb[,tt]
+    Bt[,tt] = Nt[,(tt-1)]*exp(r*(1-(Nt[,(tt-1)]/(Kb + eb[,tt]))))
     Bt[,tt][Bt[,tt]<0]<-0
     if(!Db==0){Bt[,tt] = Bt[,tt] %*% Dmat.b} #dispersal
     
-    Wt[,tt] = max(0, Bt[,tt]/Kw-1)*Bt[,tt] + abs(eb[,tt])#Winter mortality
+    Wt[,tt] = max(0, Bt[,tt]/(Kw + ew[,tt])-1)*Bt[,tt] #Winter mortality
     Nt[,tt] = Bt[,tt]-Wt[,tt]
     if(Dw==0){
       Nt[,tt][Nt[,tt]<=0]<-NA #make it so that population can't drop below 0
@@ -38,6 +38,7 @@ synchsim_sameEnv<-function(r, Kb, Kw, rho.b, sd.b, Db=0, Dw=0, tmax=100, nlocs=2
     else{
       Nt[,tt][Nt[,tt]<0]<-0 #make it so that population can't drop below 0
     }
+    
     if(!Dw==0){Nt[,tt] = Nt[,tt] %*% Dmat.w} #Winter dispersal
     if(all(is.na(Nt[,tt])) | sum(Nt[,tt]==0, na.rm=T)){break}
   }
@@ -45,7 +46,7 @@ synchsim_sameEnv<-function(r, Kb, Kw, rho.b, sd.b, Db=0, Dw=0, tmax=100, nlocs=2
   out<-list(Nt=Nt)
   if(ret.Bt){out[["Bt"]]<-Bt}
   if(ret.eb){out[["eb"]]<-eb}
-  #if(ret.ew){out[["ew"]]<-ew}
+  if(ret.ew){out[["ew"]]<-ew}
   return(out)
   
 }

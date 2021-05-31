@@ -1,13 +1,13 @@
-synchsim_main<-function(r, Kb, Kw, rho.b, rho.w, sd.b, sd.w, Db=0, Dw=0, tmax=100, nlocs=2,
-                               ret.Bt=TRUE, ret.eb=FALSE, ret.ew=FALSE)
+synchsim_noOverwint<-function(r, K, rho.b, rho.w, sd.b, sd.w, Db=0, 
+                                   tmax=100, nlocs=2, ret.Bt=TRUE, ret.eb=FALSE, ret.ew=FALSE)
 {
   
   #initialize state variables
   Nt<-matrix(NA, nlocs, tmax)
-  Nt[,1]<-runif(nlocs,1,mean(c(Kb,Kw)))
+  Nt[,1]<-runif(nlocs,1,K)
   Bt<-matrix(NA, nlocs, tmax)
-  Wt<-matrix(NA, nlocs, tmax)
-  
+
+
   #make time series of synchronous variation
   synchts<-function(rho, sd, nlocs, tmax){
     library(MASS)
@@ -22,24 +22,19 @@ synchsim_main<-function(r, Kb, Kw, rho.b, rho.w, sd.b, sd.w, Db=0, Dw=0, tmax=10
   
   #set up dispersal matrices
   Dmat.b<-matrix(Db/nlocs, nlocs, nlocs); diag(Dmat.b)<-1-Db
-  Dmat.w<-matrix(Dw/nlocs, nlocs, nlocs); diag(Dmat.w)<-1-Dw
   
   #run model
   for(tt in 2:tmax){
-    Bt[,tt] = Nt[,(tt-1)]*exp(r*(1-(Nt[,(tt-1)]/Kb))) + eb[,tt]
-    Bt[,tt][Bt[,tt]<0]<-0
-    if(!Db==0){Bt[,tt] = Bt[,tt] %*% Dmat.b} #dispersal
+    Nt[,tt] = Nt[,(tt-1)]*exp(r*(1-(Nt[,(tt-1)]/K))) + eb[,tt] + ew[,tt]
     
-    Wt[,tt] = max(0, Bt[,tt]/Kw-1)*Bt[,tt] + abs(ew[,tt])#Winter mortality
-    Nt[,tt] = Bt[,tt]-Wt[,tt]
+    if(!Db==0){Nt[,tt] = Nt[,tt] %*% Dmat.b} #dispersal
     if(Dw==0){
       Nt[,tt][Nt[,tt]<=0]<-NA #make it so that population can't drop below 0
     }
     else{
       Nt[,tt][Nt[,tt]<0]<-0 #make it so that population can't drop below 0
     }
-    
-    if(!Dw==0){Nt[,tt] = Nt[,tt] %*% Dmat.w} #Winter dispersal
+    Nt[,tt][Nt[,tt]<0]<-0 #make it so that population can't drop below 0
     if(all(is.na(Nt[,tt])) | sum(Nt[,tt]==0, na.rm=T)){break}
   }
   
