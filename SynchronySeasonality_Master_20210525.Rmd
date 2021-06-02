@@ -188,12 +188,14 @@ library(parallel)
 library(lhs)
 library(viridis)
 source("~/GitHub/synchrony-seasonality/Fn_synchsim_mainmodel_eK.R")
+source("~/GitHub/synchrony-seasonality/Fn_synchsim_altmodel_sameEnvironment_eK.R")
+source("~/GitHub/synchrony-seasonality/Fn_synchsim_altmodel_noOverwintering_eK.R")
 nn<-250
 
 # set.seed(667)
 # hypercube<-optimumLHS(n=nn, k=7)
 # 
-write.csv(hypercube, "~/GitHub/synchrony-seasonality/params_hypercube_n250_k7.csv", row.names=FALSE)
+#write.csv(hypercube, "~/GitHub/synchrony-seasonality/params_hypercube_n250_k7.csv", row.names=FALSE)
 
 hypercube<-as.matrix(read.csv("~/GitHub/synchrony-seasonality/params_hypercube_n250_k7.csv"))
 
@@ -215,10 +217,10 @@ ncores=detectCores()-4
 cl<-makeCluster(ncores)
 sens.main<-mcmapply(synchsim_main, r=r, Kb=Kb, Kw=Kw, rho.b=rho.b, rho.w=rho.w,
                        sd.b=sd.b, sd.w=sd.w, Db=Db, Dw=Dw, tmax=tmax, nlocs=nlocs, SIMPLIFY = F)
-# sens.same<-mcmapply(synchsim_same, r=r, Kb=Kb, Kw=Kw, rho.b=rho.b, rho.w=rho.w,
-#                        sd.b=sd.b, sd.w=sd.w, Db=Db, Dw=Dw, tmax=tmax, nlocs=nlocs, SIMPLIFY = F)
-# sens.noow<-mcmapply(synchsim_noow, r=r, Kb=Kb, Kw=Kw, rho.b=rho.b, rho.w=rho.w,
-#                        sd.b=sd.b, sd.w=sd.w, Db=Db, Dw=Dw, tmax=tmax, nlocs=nlocs, SIMPLIFY = F)
+sens.same<-mcmapply(synchsim_sameEnv,r=r,Kb=Kb, Kw=Kw, rho.b=rho.b,
+                        sd.b=sd.b,Db=Db,tmax=tmax,nlocs=nlocs, SIMPLIFY = F)
+sens.noow<-mcmapply(synchsim_noOverwint,r=r,K=Kb,rho.b=rho.b,rho.w=rho.w,
+                        sd.b=sd.b,sd.w=sd.w,Db=Db,tmax=tmax,nlocs=nlocs, SIMPLIFY = F)
 stopCluster(cl)
 
 getNtcor<-function(inlist){ #extract synchrony in Nt
@@ -235,37 +237,153 @@ sampres.main<-data.frame(rhoN=getNtcor(sens.main), #scale predictors to standard
                        r=scale(r), Kb=scale(Kb), Kw=scale(Kw),rho.b=scale(rho.b),sd.b=scale(sd.b),
                        sd.w=scale(sd.w),rho.w=scale(rho.w),Db=scale(Db))
 
-# sampres.same<-data.frame(rhoN=getNtcor(sens.same), #scale predictors to standardize effect sizes
-#                        r=scale(r), Kb=scale(Kb), Kw=scale(Kw),rho.b=scale(rho.b),sd.b=scale(sd.b),
-#                        sd.w=scale(sd.w),rho.w=scale(rho.w),Db=scale(Db))
-# 
-# sampres.noow<-data.frame(rhoN=getNtcor(sens.noow), #scale predictors to standardize effect sizes
-#                        r=scale(r), Kb=scale(Kb), Kw=scale(Kw),rho.b=scale(rho.b),sd.b=scale(sd.b),
-#                        sd.w=scale(sd.w),rho.w=scale(rho.w),Db=scale(Db))
+sampres.same<-data.frame(rhoN=getNtcor(sens.same), #scale predictors to standardize effect sizes
+                       r=scale(r), Kb=scale(Kb), Kw=scale(Kw),rho.b=scale(rho.b),sd.b=scale(sd.b),
+                       Db=scale(Db))
+
+sampres.noow<-data.frame(rhoN=getNtcor(sens.noow), #scale predictors to standardize effect sizes
+                       r=scale(r), Kb=scale(Kb), rho.b=scale(rho.b),sd.b=scale(sd.b),
+                       sd.w=scale(sd.w),rho.w=scale(rho.w),Db=scale(Db))
 
 lm.samp.main<-lm(rhoN~r+Kw+Kb+rho.b+rho.w+sd.b+sd.w+sd.b*rho.b+sd.w*rho.w+rho.b*rho.w+Kw*Kb, data=sampres.main, na.action=na.exclude)
 summary(lm.samp.main)
 
-# lm.samp.same<-lm(rhoN~r+Kw+Kb+rho.b+rho.w+sd.b+sd.w+sd.b*rho.b+sd.w*rho.w+rho.b*rho.w+Kw*Kb, data=sampres.main, na.action=na.exclude)
-# summary(lm.samp.same)
-# 
-# lm.samp.noow<-lm(rhoN~r+Kw+Kb+rho.b+rho.w+sd.b+sd.w+sd.b*rho.b+sd.w*rho.w+rho.b*rho.w+Kw*Kb, data=sampres.main, na.action=na.exclude)
-# summary(lm.samp.noow)
+lm.samp.same<-lm(rhoN~r+Kw+Kb+rho.b+sd.b+sd.b*rho.b+Kw*Kb, data=sampres.main, na.action=na.exclude)
+summary(lm.samp.same)
+
+lm.samp.noow<-lm(rhoN~r+Kw+rho.b+rho.w+sd.b+sd.w+sd.b*rho.b+sd.w*rho.w+rho.b*rho.w, data=sampres.main, na.action=na.exclude)
+summary(lm.samp.noow)
 
 
-modsumm.add<-summary(lm.samp.rhoN)
 
-png("fig2_parameffects_sims.png", units="in", res=300, 
+
+png("fig_parameffects_main_eK.png", units="in", res=300, 
      width=6.5, height=3.25)
-par(mar=c(7,5,2,2))
-barplot(lm.samp.rhoN$coefficients[-1], las=2, ylab = "Synchrony")
-text(seq(from=0.6,by=1.2,length.out=11),lm.samp.rhoN$coefficients[-1],paste0("p=",round(modsumm.add$coefficients[-1,4],2)),pos=3,offset=0.5)
+par(mar=c(6,5,1,1))
+barplot(lm.samp.main$coefficients[-1], las=2, ylab = "Coefficient")
+#text(seq(from=0.6,by=1.2,length.out=length(lm.samp.rhoN$coefficients)-1),lm.samp.rhoN$coefficients[-1],paste0("p=",round(modsumm.add$coefficients[-1,4],2)),pos=3,offset=0.5)
 dev.off()
+
+png("fig_parameffects_same_eK.png", units="in", res=300, 
+     width=6.5, height=3.25)
+par(mar=c(6,5,1,1))
+barplot(lm.samp.same$coefficients[-1], las=2, ylab = "Coefficient")
+#text(seq(from=0.6,by=1.2,length.out=length(lm.samp.rhoN$coefficients)-1),lm.samp.rhoN$coefficients[-1],paste0("p=",round(modsumm.add$coefficients[-1,4],2)),pos=3,offset=0.5)
+dev.off()
+
+png("fig_parameffects_noow_eK.png", units="in", res=300, 
+     width=6.5, height=3.25)
+par(mar=c(6,5,1,1))
+barplot(lm.samp.noow$coefficients[-1], las=2, ylab = "Coefficient")
+#text(seq(from=0.6,by=1.2,length.out=length(lm.samp.rhoN$coefficients)-1),lm.samp.rhoN$coefficients[-1],paste0("p=",round(modsumm.add$coefficients[-1,4],2)),pos=3,offset=0.5)
+dev.off()
+
 
 # save(modsumm.add, file="modsumm_main.RData")
 
 ```
+Now, with noises on r during breeding season and w during overwintering
 
+```{r nlin.sensitivity2, echo=FALSE, cache=TRUE}
+rm(list=ls())
+library(parallel)
+library(lhs)
+library(viridis)
+source("~/GitHub/synchrony-seasonality/Fn_synchsim_mainmodel_ereK.R")
+source("~/GitHub/synchrony-seasonality/Fn_synchsim_altmodel_sameEnvironment_ereK.R")
+source("~/GitHub/synchrony-seasonality/Fn_synchsim_altmodel_noOverwintering_ereK.R")
+nn<-250
+
+# set.seed(667)
+# hypercube<-optimumLHS(n=nn, k=7)
+# 
+#write.csv(hypercube, "~/GitHub/synchrony-seasonality/params_hypercube_n250_k7.csv", row.names=FALSE)
+
+hypercube<-as.matrix(read.csv("~/GitHub/synchrony-seasonality/params_hypercube_n250_k7.csv"))
+
+r=qunif(hypercube[,1],0.1,2)
+Kb=qunif(hypercube[,6],5,10)
+Kw=qunif(hypercube[,7],5,10)
+rho.b=hypercube[,2]
+rho.w=hypercube[,3]
+sd.b=qunif(hypercube[,4],1/3,3)
+sd.w=qunif(hypercube[,5],1/3,3)
+Db=0#runif(nn,0,0.4)
+Dw=0
+tmax=1100
+burn=100
+nlocs=2
+
+ncores=detectCores()-4
+
+cl<-makeCluster(ncores)
+sens.main<-mcmapply(synchsim_main, r=r, Kb=Kb, Kw=Kw, rho.b=rho.b, rho.w=rho.w,
+                       sd.b=sd.b, sd.w=sd.w, Db=Db, Dw=Dw, tmax=tmax, nlocs=nlocs, SIMPLIFY = F)
+sens.same<-mcmapply(synchsim_sameEnv,r=r,Kb=Kb, Kw=Kw, rho.b=rho.b,
+                        sd.b=sd.b,Db=Db,tmax=tmax,nlocs=nlocs, SIMPLIFY = F)
+sens.noow<-mcmapply(synchsim_noOverwint,r=r,K=Kb,rho.b=rho.b,rho.w=rho.w,
+                        sd.b=sd.b,sd.w=sd.w,Db=Db,tmax=tmax,nlocs=nlocs, SIMPLIFY = F)
+stopCluster(cl)
+
+getNtcor<-function(inlist){ #extract synchrony in Nt
+  out<-rep(NA, length(inlist))
+  for(ii in 1:length(inlist)){
+    tmp<-log(inlist[[ii]]$Nt[,-c(1:burn)])
+    out[ii]<-cor(t(tmp))[2,1]
+  }
+  return(out)
+}
+
+  
+sampres.main<-data.frame(rhoN=getNtcor(sens.main), #scale predictors to standardize effect sizes
+                       r=scale(r), Kb=scale(Kb), Kw=scale(Kw),rho.b=scale(rho.b),sd.b=scale(sd.b),
+                       sd.w=scale(sd.w),rho.w=scale(rho.w),Db=scale(Db))
+
+sampres.same<-data.frame(rhoN=getNtcor(sens.same), #scale predictors to standardize effect sizes
+                       r=scale(r), Kb=scale(Kb), Kw=scale(Kw),rho.b=scale(rho.b),sd.b=scale(sd.b),
+                       Db=scale(Db))
+
+sampres.noow<-data.frame(rhoN=getNtcor(sens.noow), #scale predictors to standardize effect sizes
+                       r=scale(r), Kb=scale(Kb), rho.b=scale(rho.b),sd.b=scale(sd.b),
+                       sd.w=scale(sd.w),rho.w=scale(rho.w),Db=scale(Db))
+
+lm.samp.main<-lm(rhoN~r+Kw+Kb+rho.b+rho.w+sd.b+sd.w+sd.b*rho.b+sd.w*rho.w+rho.b*rho.w+Kw*Kb, data=sampres.main, na.action=na.exclude)
+summary(lm.samp.main)
+
+lm.samp.same<-lm(rhoN~r+Kw+Kb+rho.b+sd.b+sd.b*rho.b+Kw*Kb, data=sampres.main, na.action=na.exclude)
+summary(lm.samp.same)
+
+lm.samp.noow<-lm(rhoN~r+Kw+rho.b+rho.w+sd.b+sd.w+sd.b*rho.b+sd.w*rho.w+rho.b*rho.w, data=sampres.main, na.action=na.exclude)
+summary(lm.samp.noow)
+
+
+
+
+png("fig_parameffects_main_ereK.png", units="in", res=300, 
+     width=6.5, height=3.25)
+par(mar=c(6,5,1,1))
+barplot(lm.samp.main$coefficients[-1], las=2, ylab = "Coefficient")
+#text(seq(from=0.6,by=1.2,length.out=length(lm.samp.rhoN$coefficients)-1),lm.samp.rhoN$coefficients[-1],paste0("p=",round(modsumm.add$coefficients[-1,4],2)),pos=3,offset=0.5)
+dev.off()
+
+png("fig_parameffects_same_ereK.png", units="in", res=300, 
+     width=6.5, height=3.25)
+par(mar=c(6,5,1,1))
+barplot(lm.samp.same$coefficients[-1], las=2, ylab = "Coefficient")
+#text(seq(from=0.6,by=1.2,length.out=length(lm.samp.rhoN$coefficients)-1),lm.samp.rhoN$coefficients[-1],paste0("p=",round(modsumm.add$coefficients[-1,4],2)),pos=3,offset=0.5)
+dev.off()
+
+png("fig_parameffects_noow_ereK.png", units="in", res=300, 
+     width=6.5, height=3.25)
+par(mar=c(6,5,1,1))
+barplot(lm.samp.noow$coefficients[-1], las=2, ylab = "Coefficient")
+#text(seq(from=0.6,by=1.2,length.out=length(lm.samp.rhoN$coefficients)-1),lm.samp.rhoN$coefficients[-1],paste0("p=",round(modsumm.add$coefficients[-1,4],2)),pos=3,offset=0.5)
+dev.off()
+
+
+# save(modsumm.add, file="modsumm_main.RData")
+
+```
 Now, vary synchrony in breeding and overwintering environment while holding other parameters constant.
 The main model is compared against two alternates: 
 1) where population dynamics have breeding and overwintering seasons, but the environmental conditions are identical.
