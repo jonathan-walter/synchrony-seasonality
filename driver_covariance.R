@@ -66,6 +66,7 @@ for(ii in 2:length(samplepts)){
 }
 
 hist(cov_b1w2)
+summary(c(cov_b1w2))
 
 
 cov_w1b2<-matrix(NA, length(samplepts), length(samplepts))
