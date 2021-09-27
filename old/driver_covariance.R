@@ -57,24 +57,26 @@ for(ii in 1:length(samplepts)){
 }
 
 
-cov_b1w2<-matrix(NA, length(samplepts), length(samplepts))
+cor_b1w2<-matrix(NA, length(samplepts), length(samplepts))
 
 for(ii in 2:length(samplepts)){
   for(jj in 1:ii){
-    cov_b1w2[ii,jj]<-cov(summer_tavg[ii,1:19], winter_tavg[jj,2:20])
+    cor_b1w2[ii,jj]<-cor(summer_tavg[ii,1:19], winter_tavg[jj,2:20])
   }
 }
 
-hist(cov_b1w2)
-summary(c(cov_b1w2))
+hist(cor_b1w2)
+summary(c(cor_b1w2))
+plot(distKm, cor_b1w2)
 
 
-cov_w1b2<-matrix(NA, length(samplepts), length(samplepts))
+cor_w1b2<-matrix(NA, length(samplepts), length(samplepts))
 
 for(ii in 2:length(samplepts)){
   for(jj in 1:ii){
-    cov_w1b2[ii,jj]<-cov(summer_tavg[jj,1:19], winter_tavg[ii,2:20])
+    cor_w1b2[ii,jj]<-cor(summer_tavg[jj,1:19], winter_tavg[ii,2:20])
   }
 }
 
-hist(cov_w1b2)
+hist(cor_w1b2)
+plot(distKm, cor_w1b2)

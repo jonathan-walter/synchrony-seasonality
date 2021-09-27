@@ -140,16 +140,16 @@ par(mfrow=c(3,1), mar=c(3.5,3.5,1.5,1), mgp=c(1.7,0.5,0))
 image(rho.b, rho.w, varrhos.analytical1, zlim=c(-1,1), col=pal(50),
       xlab=expression(rho[b]), ylab=expression(rho[w]))
 contour(rho.b, rho.w, varrhos.analytical1, add=T)
-mtext(expression(paste(a[2]," = 0.5, var(",epsilon[b],") = var(",epsilon[w],") = 0.25")), cex=0.6)
+mtext(expression(paste(a[2]," = 0.5, var(",epsilon[B],") = var(",epsilon[W],") = 0.25")), cex=0.6)
 
 #varying a2
 plot(a2seq, a2_v1.analytical, type="l", ylim=c(0,1), xlab=expression(a[2]), ylab="Population synchrony")
 lines(a2seq, a2_v2.analytical, lty=2)
 lines(a2seq, a2_v3.analytical, lty=3)
-mtext(expression(paste("var(",epsilon[b],") = var(",epsilon[w],") = 0.25")), cex=0.6)
-legend("topright", legend=c(expression(paste(rho[b]," = 0.3, ",rho[w]," = 0.7")), 
-                            expression(paste(rho[b]," =  ",rho[w]," = 0.5")), 
-                            expression(paste(rho[b]," = 0.7, ",rho[w]," = 0.3"))), 
+mtext(expression(paste("var(",epsilon[B],") = var(",epsilon[W],") = 0.25")), cex=0.6)
+legend("topright", legend=c(expression(paste(rho[B]," = 0.3, ",rho[W]," = 0.7")), 
+                            expression(paste(rho[B]," =  ",rho[W]," = 0.5")), 
+                            expression(paste(rho[B]," = 0.7, ",rho[W]," = 0.3"))), 
        lty=c(1,3,2), bty="n", cex=0.9)
 
 #varying driver variances
@@ -163,12 +163,12 @@ lines(sd.wseq, sd.w_v2.analytical, lty=2, col="red")
 lines(sd.bseq, sd.b_v3.analytical, lty=1)
 lines(sd.wseq, sd.w_v3.analytical, lty=3, col="red")
 mtext(expression(paste(a[2]," = 0.5")), cex=0.6)
-legend("top", ncol=2, legend=c(expression(paste("changing var(",epsilon[b],")"))
-                               , expression(paste("changing var(",epsilon[w],")"))), 
+legend("top", ncol=2, legend=c(expression(paste("changing var(",epsilon[B],")"))
+                               , expression(paste("changing var(",epsilon[W],")"))), 
        lty=1, col=c("black","red"), bty="n", cex=0.9)
-legend("bottom", ncol=2, legend=c(expression(paste(rho[b]," = 0.3, ",rho[w]," = 0.7")), 
-                            expression(paste(rho[b]," = ",rho[w]," = 0.5")), 
-                            expression(paste(rho[b]," = 0.7, ",rho[w]," = 0.3"))), 
+legend("bottom", ncol=2, legend=c(expression(paste(rho[B]," = 0.3, ",rho[W]," = 0.7")), 
+                            expression(paste(rho[B]," = ",rho[W]," = 0.5")), 
+                            expression(paste(rho[B]," = 0.7, ",rho[W]," = 0.3"))), 
        lty=c(1,3,2), bty="n", cex=0.9)
 
 dev.off()
@@ -786,9 +786,9 @@ mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.8)
 mtext("Overwintering synchrony",2,outer=T,cex=0.8, line=0)
 #mtext("Main model", 2, outer=T, at=3/4, cex=0.8, line=0)
 #mtext("Alt: same environment", 2, outer=T, at=1/4, cex=0.8, line=0)
-mtext("cor(Nt)", outer=T, at=1/6, cex=0.8, line=-0.25)
-mtext("cor(Bt)", outer=T, at=3/6, cex=0.8, line=-0.25)
-mtext("cor(Bt)-cor(Nt)", outer=T, at=5/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",N[i],"(t))")), outer=T, at=1/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",B[i],"(t))")), outer=T, at=3/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",B[i],"(t))-cor(",N[i],"(t))")), outer=T, at=5/6, cex=0.8, line=-0.25)
 
 
 dev.off()
@@ -1001,9 +1001,9 @@ mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.8)
 mtext("Overwintering synchrony",2,outer=T,cex=0.8, line=0)
 #mtext("Main model", 2, outer=T, at=3/4, cex=0.8, line=0)
 #mtext("Alt: same environment", 2, outer=T, at=1/4, cex=0.8, line=0)
-mtext("cor(Nt)", outer=T, at=1/6, cex=0.8, line=-0.25)
-mtext("cor(Bt)", outer=T, at=3/6, cex=0.8, line=-0.25)
-mtext("cor(Bt)-cor(Nt)", outer=T, at=5/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",N[i],"(t))")), outer=T, at=1/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",B[i],"(t))")), outer=T, at=3/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",B[i],"(t))-cor(",N[i],"(t))")), outer=T, at=5/6, cex=0.8, line=-0.25)
 
 
 dev.off()
@@ -1213,12 +1213,14 @@ mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.8)
 mtext("Overwintering synchrony",2,outer=T,cex=0.8, line=0)
 #mtext("Main model", 2, outer=T, at=3/4, cex=0.8, line=0)
 #mtext("Alt: same environment", 2, outer=T, at=1/4, cex=0.8, line=0)
-mtext("cor(Nt)", outer=T, at=1/6, cex=0.8, line=-0.25)
-mtext("cor(Bt)", outer=T, at=3/6, cex=0.8, line=-0.25)
-mtext("cor(Bt)-cor(Nt)", outer=T, at=5/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",N[i],"(t))")), outer=T, at=1/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",B[i],"(t))")), outer=T, at=3/6, cex=0.8, line=-0.25)
+mtext(expression(paste("cor(",B[i],"(t))-cor(",N[i],"(t))")), outer=T, at=5/6, cex=0.8, line=-0.25)
 
 dev.off()
 
+
+#expression(paste(rho[B]," = ",rho[W]," = 0.5")
 
 ## supplement figure with alternate models
 
@@ -1240,9 +1242,9 @@ dev.off()
 
 #make figure comparing main model to alternate
 
-png("~/GitHub/synchrony-seasonality/fig4_compare_alternates_eN.png", units="in", res=300, width=6.5, height=4.65)
+png("~/GitHub/synchrony-seasonality/fig4_compare_alternates_eN.png", units="in", res=300, width=6.5, height=4.8)
 
-par(mfcol=c(2,3), mar=c(2,3,2.5,1), oma=c(1.5,0,0,0),mgp=c(2,0.6,0), tcl=-0.4)
+par(mfcol=c(2,3), mar=c(2.5,3,2.5,1), oma=c(1.5,0,0,0),mgp=c(2,0.6,0), tcl=-0.4)
 #main model
 image(rho, rho, Ntcor.main, xlab="", ylab="Winter environment synchrony", asp=1, 
       main="", col=pal(50), zlim=c(-1,1))
