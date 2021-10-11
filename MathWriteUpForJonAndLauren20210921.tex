@@ -1,0 +1,229 @@
+\documentclass[letterpaper,11pt]{article}
+
+%packages
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage[left=2cm,top=2cm,right=2cm,bottom=1.5cm,head=.5cm,foot=.5cm]{geometry}
+\usepackage{url}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{subfig}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{authblk}
+\usepackage{xr}
+\usepackage{relsize}
+\usepackage{tikz}
+
+%new commands
+\newcommand{\ole}{\overline{\epsilon}}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\cov}{cov}
+\DeclareMathOperator{\cor}{cor}
+
+%header material for paper
+\title{Math for Jon and Lauren for seasonality and synchrony paper}
+\date{2021 09 21}
+\author[a]{Daniel C. Reuman}
+\affil[a]{Department of Ecology and Evolutionary Biology and Center for Ecological Research and Kansas Biological Survey, University of Kansas}
+
+%paper starts
+\begin{document}
+
+\maketitle
+
+\section{The model}\label{sect:model}
+
+We consider a 2-patch model using $i=1,2$ to index the patches, which are considered identical. The model is
+\begin{align}
+N_i(t) &= (1-d)N_1(t-1)f[N_1(t-1),\epsilon_{B,1}(t)]s[N_1(t-1)f[N_1(t-1),\epsilon_{B,1}(t)],\epsilon_{W,1}(t)] \label{eq:genmod_1}\\
+&+ dN_2(t-1)f[N_2(t-1),\epsilon_{B,2}(t)]s[N_2(t-1)f[N_2(t-1),\epsilon_{B,2}(t)],\epsilon_{W,2}(t)] \\
+N_2(t) &= (1-d)N_2(t-1)f[N_2(t-1),\epsilon_{B,2}(t)]s[N_2(t-1)f[N_2(t-1),\epsilon_{B,2}(t)],\epsilon_{W,2}(t)] \\
+&+ dN_1(t-1)f[N_1(t-1),\epsilon_{B,1}(t)]s[N_1(t-1)f[N_1(t-1),\epsilon_{B,1}(t)],\epsilon_{W,1}(t)],\label{eq:genmod_4}
+\end{align}
+where $N_i(t)$ is population density in patch $i$ at time $t$, $0 \leq d < 0.5$ is a
+dispersal parameter, the function $f(N,\epsilon_B)$ is a breeding season multiplier,
+the function $s(B,\epsilon_W)$ is a winter survival
+rate, $\epsilon_{B,i}(t)$ is the environment during the breeding season in patch
+$i$ at time $t$, and $\epsilon_{W,i}(t)$ is the environment during the winter in patch
+$i$ at time t. We assume $f>0$ and
+$\frac{\partial f}{\partial N}<0$, so that more pre-breeding density is always bad
+for per-capita population growth during the breeding season. We do not assume $f>1$, so
+net death during the breeding season may occur. We assume $\frac{\partial f}{\partial \epsilon_B}>0$, so that higher values of the breeding-season
+environmental variable are good for
+breeding and breeding-season survival. We assume $0 < s < 1$, and
+$\frac{\partial s}{\partial B}<0$, so that more pre-winter, post-breeding-season
+individuals are always bad for winter survival. We assume
+$\frac{\partial s}{\partial \epsilon_W}>0$, so that higher values of the winter
+environmental variable are always good for winter survival. We adopted the
+convention that larger values of environmental variables are always ``good'' for
+the population. This convention is arbitrary, but is also
+adopted without loss of generality, since one
+could always replace an environmental variable for which larger values are
+``bad'' for the population with its negative. 
+For simplicity, we assume the four-dimensional random variables $(\epsilon_{B,1}(t),\epsilon_{B,2}(t),\epsilon_{W,1}(t),\epsilon_{W,2}(t))$
+are independent and identically distributed (iid) across time (so the 
+$t$ argument can usually be dropped); and
+that $(\epsilon_{B,1},\epsilon_{W,1})$ and 
+$(\epsilon_{B,2},\epsilon_{W,2})$ are identically distributed and
+$(\epsilon_{B,1},\epsilon_{W,2})$ and $(\epsilon_{B,2},\epsilon_{W,1})$
+are identically distributed.
+The first of these assumptions is a kind of stationarity and white-noise 
+assumption, and the second and third assumptions help make our model
+spatially homogeneous.
+
+%Jon and Lauren, the explanation above is a bit skeletal, you may want to flesh it
+%out, including possibly a flow diagram-type thing showing the steps of the model,
+%which are breeding, then winter survival, then dispersal, and the influences
+%on the pops at each step. OK, the description should be mathematically complete,
+%but you may want to soften it up for an ecological audience by adding a few more
+%words and interpretation of the functional forms used and assumptions made.
+
+\section{Linearization}
+
+For this section, we assume $d=0$, for simplicity. We also assume the one-patch,
+deterministic version of the model has a positive stable equilibrium, $N^*$, i.e.,
+\begin{equation}
+N^*=N^*f[N^*,\ole_{B}]s[N^*f[N^*,\ole_B],\ole_W].
+\end{equation}
+Here, an overline denotes expected value of a random variable. The expected
+values $\ole_B$ and $\ole_W$ need no patch index because of assumptions
+made about identically distributed environments across patches. We let
+$B^*=N^*f[N^*,\ole_B]$, so that $N^*=B^*s[B^*,\ole_W]$. This is the post-breeding,
+pre-winter equilibrium density of the one-patch deterministic model. We have
+$\frac{B^*}{N^*}=f[N^*,\ole_B]$, $\frac{N^*}{B^*}=s[B^*,\ole_W]$ and
+$f[N^*,\ole_B]=\frac{1}{s[B^*,\ole_W]}$. Thus, at average
+environmental values and at equilibrium, fecundity and survival balance
+each other out, as expected.
+
+We now linearize the no-dispersal model at the equilibrium. Defining
+\begin{align}
+g(N,\epsilon_B,\epsilon_W) &= N f[N,\epsilon_B] s[N f[N,\epsilon_B],\epsilon_W], \\
+n_i(t) &= N_i(t)-N^*, \\
+e_{B,i}(t) &= \epsilon_{B,i}(t)-\ole_B, \\
+e_{W,i}(t) &= \epsilon_{W,i}(t)-\ole_W,
+\end{align}
+linearizing gives
+\begin{equation}
+n_i(t) \approx P_A n_i(t-1) + P_B e_{B,i}(t) + P_W e_{W,i}(t)\label{eq:lin_model}
+\end{equation}
+for $i=1,2$, where
+\begin{align}
+P_A &= \left[ \frac{\partial g}{\partial N} \right|_{(N^*,\ole_B,\ole_W)} \\
+P_B &= \left[ \frac{\partial g}{\partial \epsilon_B} \right|_{(N^*,\ole_B,\ole_W)} \\
+P_W &= \left[ \frac{\partial g}{\partial \epsilon_W} \right|_{(N^*,\ole_B,\ole_W)}.
+\end{align}
+This is an autoregressive moving average-type model, which can be subjected
+to a wide range of mathematical analyses. The stability assumption, above,
+is the same as assuming $|P_A|<1$. It is straightforward to show
+\begin{equation}
+P_A= P_{A,B} P_{A,W},
+\end{equation}
+where
+\begin{equation}
+P_{A,B} = \frac{\partial}{\partial N} [Nf(N,\epsilon_B)|_{(N^*,\ole_B)} 
+\end{equation}
+is the marginal benefit, at equilibrium and at average environment, to the post-breeding population
+of a single additional pre-breeding individual, and
+\begin{equation}
+P_{A,W}= \frac{\partial}{\partial B} [ Bs(B,\epsilon_W) |_{(B^*,\ole_W)} 
+\end{equation}
+is the marginal benefit, at equilibrium and at average environment, to the post-winter population
+of a single additional pre-winter individual. 
+The condition $|P_A|<1$ is then equivalent to the condition 
+$| P_{A,B} | \times | P_{A,W} | <1$.
+
+\section{Analysis of the linearized model}
+
+To compute synchrony of the model (\ref{eq:lin_model}), we compute 
+$\cor(n_i,n_j)$ for $i \neq j$ by computing $\cov(n_i,n_j)$, $\var(n_i)$ and $\var(n_j)$. We have
+\begin{align}
+\cov(n_i(t),n_j(t)) &= \cov(P_A n_i(t-1) + P_B e_{B,i}(t) + P_W e_{W,i}(t),P_A n_j(t-1) + P_B e_{B,j}(t) + P_W e_{W,j}(t)) \\
+&= P_A^2 \cov(n_i(t-1),n_j(t-1)) \\
+&+ P_B^2 \cov(\epsilon_{B,i}(t),\epsilon_{B,j}(t)) \\
+&+ P_W^2 \cov(\epsilon_{W,i}(t),\epsilon_{W,j}(t)) \\
+&+ 2P_B P_W \cov(\epsilon_{B,i}(t),\epsilon_{W,j}(t)).
+\end{align}
+We here used some of the assumptions about the environmental noise random
+variables listed at the end of section \ref{sect:model}. We then have 
+\begin{equation}
+(1-P_A^2) \cov(n_i,n_j) = P_B^2 \cov(\epsilon_{B,i},\epsilon_{B,j}) 
++ P_W^2 \cov(\epsilon_{W,i},\epsilon_{W,j}) 
++ 2P_B P_W \cov(\epsilon_{B,i},\epsilon_{W,j}).
+\end{equation}
+Furthermore,
+\begin{equation}
+\var(n_i(t)) = P_A^2 \var(n_i(t-1)) + P_B^2 \var(\epsilon_{B,i}(t))
++P_W^2 \var(\epsilon_{W,i}(t))+2P_B P_W \cov(\epsilon_{B,i}(t),\epsilon_{W,i}(t)),
+\end{equation}
+and therefore
+\begin{equation}
+(1-P_A^2)\var(n_i) = P_B^2 \var(\epsilon_{B,i})
++P_W^2 \var(\epsilon_{W,i})+2P_B P_W \cov(\epsilon_{B,i},\epsilon_{W,i}),
+\end{equation}
+which holds independently of the value of $i$. Therefore, 
+\begin{equation}
+\cor(n_i,n_j)=\frac{P_B^2 \cov(\epsilon_{B,i},\epsilon_{B,j})
++ P_W^2 \cov(\epsilon_{W,i},\epsilon_{W,j})
++ 2P_B P_W \cov(\epsilon_{B,i},\epsilon_{W,j})}{P_B^2 \var(\epsilon_{B,i})
++P_W^2 \var(\epsilon_{W,i})+2P_B P_W \cov(\epsilon_{B,i},\epsilon_{W,i})}.
+\end{equation}
+The correlation $\cor(n_i,n_j)$ approximately equals the correlation
+$\cor(N_i,N_j)$ of the original (un-linearized) model, so the main text
+should probably show this result:
+\begin{equation}
+\cor(N_i,N_j) \approx \frac{P_B^2 \cov(\epsilon_{B,i},\epsilon_{B,j})
++ P_W^2 \cov(\epsilon_{W,i},\epsilon_{W,j})
++ 2P_B P_W \cov(\epsilon_{B,i},\epsilon_{W,j})}{P_B^2 \var(\epsilon_{B,i})
++P_W^2 \var(\epsilon_{W,i})+2P_B P_W \cov(\epsilon_{B,i},\epsilon_{W,i})}.
+\end{equation}
+Note that the first two terms in the numerator relate to traditional
+measures of spatial synchrony of environmental variables, but ``cross-variable''
+synchrony, both between and within locations (in the numerator and 
+denominator, respectively), also contribute. 
+
+There are some interpretations available for the coefficients $P_A$, $P_B$, $P_W$,
+but they may or may not be all that interesting, so I'll maybe save those for
+another time. Likewise it may (or may not) be interesting to try to develop
+interpretations of how cross-site, cross-variable synchrony versus same-site,
+cross-variable synchrony may influence population synchrony under 
+different circumstances corresponding to different values of $P_B$ and $P_W$.
+Also note that the value of $P_A$ does not matter in the end for population
+synchrony.
+
+\section{The simulation model}
+
+I think the simulation model should be a special case of the model from 
+(\ref{eq:genmod_1})-(\ref{eq:genmod_4}), so it suffices to specify $f$ and $s$.
+I think $f(N,\epsilon_B)=\exp(f_0)\exp(-N/K_B)\exp(\epsilon_B)$
+is probably a good choice. This is similar to what was used in the version
+of the manuscript that I read.
+I think $s(B,\epsilon_W)=\min ( \exp(s_0) \exp(-B/K_W) \exp(\epsilon_W),1 )$
+is probably a reasonable choice. It might be 
+possible to think of a better choice for
+$s$, one that does not involve that pesky $\min$ function, but probably not worth 
+worrying too much about it. Ricker-like formulations were used previously, but
+interpretations of parameters of such models, in this context, as
+growth rates and carrying capacities, are not appropriate. Instead we
+have $\exp(f_0)$ and $\exp(s_0)$ the fecundity and survival, respectively,
+at $0$ density in an average environment, and $K_B$ and $K_W$ 
+which control how quickly fecundity and
+survival decrease with increasing density. We must require $\exp(s_0) \leq 1$.
+There are other constraints on the parameters required for the model
+to have a stable equilibrium, it's probably best to just test using simulations
+whether the model has a stable equilibrium for whatever parameters you 
+choose,and if it does not, choose others. If you end up really needing an 
+analytic statement of what parameter constraints have to be imposed to get
+a stable equilibrium for this model, let me know.
+Note that you should also ensure that the random variables in your simulations
+satisfy the assumptions about the random variables listed at the end 
+of section \ref{sect:model}. Let me know if those are unclear. 
+Your first set of simulations should use $d=0$ and should agree with 
+what can be computed from the analytic results above. For that comparison,
+you'll need the values of $P_B$ and $P_W$. Let me know if you need help with
+that.
+
+\end{document}
