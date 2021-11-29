@@ -41,9 +41,17 @@ simmod_main<-function(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
     Bt <- matrix(NA, tmax, 2)
   }
   
+  mymin <- function(x){
+    out <- rep(NA, length(x))
+    for(ii in 1:length(x)){
+      out[ii] <- min(c(x[ii]),1)
+    }
+    return(out)
+  }
+  
   for(tt in 2:tmax){
     fN <- exp(f0)*exp(-Nt[tt-1,]/kB)*exp(eb[tt,])
-    sN <- min(exp(s0)*exp(-fN/kW)*exp(ew[tt,]), 1)
+    sN <- mymin(exp(s0)*exp(-(Nt[tt-1,]*fN)/kW)*exp(ew[tt,]))
     Nt[tt,] <- Nt[tt-1]*fN*sN
     
     if(dfrac > 0){

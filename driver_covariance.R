@@ -63,7 +63,9 @@ cor_b1w2<-matrix(NA, length(samplepts), length(samplepts))
 
 for(ii in 2:length(samplepts)){
   for(jj in 1:ii){
+    #correlate breeding season with next winter
     cor_b1w2[ii,jj]<-cor(summer_tavg[ii,1:19], winter_tavg[jj,2:20])
+    #cor_b1w2[ii,jj]<-cor(summer_tavg[ii,1:19], winter_tavg[jj,2:20])
   }
 }
 
@@ -72,29 +74,57 @@ summary(c(cor_b1w2))
 plot(distKm, cor_b1w2)
 
 
-cor_w1b2<-matrix(NA, length(samplepts), length(samplepts))
-
-for(ii in 2:length(samplepts)){
-  for(jj in 1:ii){
-    cor_w1b2[ii,jj]<-cor(summer_tavg[jj,1:19], winter_tavg[ii,2:20])
-  }
-}
-
-hist(cor_w1b2)
-plot(distKm, cor_w1b2)
+# cor_w1b2<-matrix(NA, length(samplepts), length(samplepts))
+# 
+# for(ii in 2:length(samplepts)){
+#   for(jj in 1:ii){
+#     cor_w1b2[ii,jj]<-cor(summer_tavg[jj,1:19], winter_tavg[ii,2:20])
+#   }
+# }
+# 
+# hist(cor_w1b2)
+# plot(distKm, cor_w1b2)
 
 good <- complete.cases(summer_tavg)
 
 summer_tavg <- summer_tavg[good,]
 winter_tavg <- winter_tavg[good,]
 
-sync_eB <- Sncf(x=samplepts@coords[good,1], y=samplepts@coords[good,2], z=summer_tavg, latlon=TRUE)
-sync_eW <- Sncf(x=samplepts@coords[good,1], y=samplepts@coords[good,2], z=winter_tavg, latlon=TRUE)
-sync_eBeW <- Sncf(x=samplepts@coords[good,1], y=samplepts@coords[good,2], z=summer_tavg[,1:19], w=winter_tavg[,2:20], latlon=TRUE)
-
-plot(sync_eB)
-plot(sync_eW)
-plot(sync_eBeW)
+sync_eB <- Sncf(x=samplepts@coords[good,1], y=samplepts@coords[good,2], z=summer_tavg, latlon=TRUE, resamp=100)
+sync_eW <- Sncf(x=samplepts@coords[good,1], y=samplepts@coords[good,2], z=winter_tavg, latlon=TRUE, resamp=100)
+sync_eBeW <- Sncf(x=samplepts@coords[good,1], y=samplepts@coords[good,2], z=summer_tavg[,1:19], w=winter_tavg[,2:20], latlon=TRUE, resamp=100)
 
 
+pdf("~/GitHub/synchrony-seasonality/cross_season_synch_roughFigs.pdf", onefile=T)
 
+plot(sync_eB, main="synchrony in breeding season")
+plot(sync_eW, main="synchrony in overwintering season")
+plot(sync_eBeW, main="cross-season synchrony")
+hist(cor_b1w2, main="cross-season synchrony")
+abline(v=median(cor_b1w2, na.rm=T), lwd=2, lty=2)
+hist(diag(cor_b1w2))
+abline(v=median(diag(cor_b1w2), na.rm=T), lwd=2, lty=2)
+#hist(diag(cor_w1b2))
+
+pal <- colorRampPalette(colors=c("red","lightgrey","blue"))
+pal <- pal(100)
+
+rampscale <- function(x){
+  
+  out <- x - min(x, na.rm=T)
+  out <- out / max(out, na.rm=T)
+  out <- round(out*100)
+  return(out)
+}
+
+
+layout(matrix(1:2,ncol=2,byrow=T), widths=c(0.9,0.1))
+
+par(mar=c(1,1,1,1))
+plot(samplepts, pch=16, col=pal[rampscale(diag(cor_b1w2))])
+mtext("cor(bi, wi)")
+image(t(matrix(1:100)), col=pal, xaxt="n", yaxt="n")
+axis(2, at=seq(0,1,length.out=5), las=2,
+     labels=round(seq(min(diag(cor_b1w2), na.rm=T), max(diag(cor_b1w2), na.rm=T), length.out=5), digits=2))
+
+dev.off()

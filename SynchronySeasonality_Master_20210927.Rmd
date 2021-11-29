@@ -20,68 +20,77 @@ This R Markdown document organizes for completeness and replicability a series o
 First, compare analytical solution to an equivalent simulation model to confirm it works
 
 ```{r analytical.compare, echo=FALSE, cache=TRUE}
-library(parallel)
-library(lhs)
+# library(parallel)
+# library(lhs)
+library(rootSolve)
 source("~/GitHub/synchrony-seasonality/simmod_main.R")
 
 ## start with one example, then move to a search over the parameter space
 tmax = 1000
 burn = 100
 f0 = 1.1
-kB = 5
-s0 = -0.1
-kW = 10
-cor.ebij = 0.5
+kB = 20
+s0 = -0.5
+kW = 20
+cor.ebij = 0.6
 cor.ewij = 0.5
-cor.ebew = 0.2
+cor.ebew = 0.5
 sd.e = 0.01
 dfrac = 0
 
-linear.test<-simmod_main(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e, dfrac, getBt=TRUE)
-
-plot(linear.test$Nt[,1])
-
-cor(linear.test$Nt[-c(1:burn),])
-cor(linear.test$Bt[-c(1:burn),], use="pairwise.complete.obs")
-cor(linear.test$env[-c(1:burn),])
-
-
-plot(linear.test$Nt[,1])
   
 analytical.solution<-function(f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e){
   
   #find equilibrium value of N
+  rate <- function(N){
+    exp(f0)*exp(-N/kB) * exp(s0)*exp(-(N*exp(f0)*exp(-N/kB))/kW) - 1
+  }
+  Eq <- uniroot.all(rate, c(1, max(c(kB,kW))*1.5))
   
+  eig <- vector()
+  for (i in 1:length(Eq)){
+    eig[i] <- sign (gradient(rate, Eq[i]))
+  }
   
-  # #compute derivatives at N <------------------ NOT CORRECT
-  # exprF = expression(exp(f0)*exp(-Nstar/kB))
-  # dF = deriv(exprF, 'Nstar')
-  # PB = eval(dF)
-  # exprS = expression(exp(s0)*exp(-Nstar/kW))
-  # dS = deriv(exprS, 'Nstar')
-  # PW = eval(dS)
+  if(!any(eig==-1)){
+    stop("No stable equilibria between 1 and 1.5*max(kB, kW)")
+  }
   
-  g <- expression(N*exp(f0)*exp(-N/kB)*exp(eB)*exp(s0)*exp((-N*exp(f0)*exp(-N/kB))/kW)*exp(eW))
+  Neq <- Eq[eig==-1]
+
+  
+  # #compute derivatives at N 
+  g <- expression(Neq*exp(f0)*exp(-Neq/kB)*exp(eB)*exp(s0)*exp(-(Neq*exp(f0)*exp(-Neq/kB)*exp(eB))/kW)*exp(eW))
   dgdeb <- deriv(g, 'eB')
   dgdew <- deriv(g, 'eW')
   eB <- eW <- 0
-  PB <- eval(dgdeb)
-  PW <- eval(dgdew)
+  PB <- as.numeric(eval(dgdeb))
+  PW <- as.numeric(eval(dgdew))
   
-
+  #convert between correlation/sd and covariance/variance
+  cov.ebij <- cor.ebij*(sd.e^2)
+  cov.ewij <- cor.ewij*(sd.e^2)
+  cov.ebew <- cor.ebew*(sd.e^2)
+  var.e <- sd.e^2
+  
+  return((PB^2*cov.ebij + PW^2*cov.ewij + 2*PB*PW*cov.ebew)/(PB^2*var.e + PW^2*var.e + 2*PB*PW*cov.ebew))
+  
 }
 
-cor(linear.test$Nt[1,-c(1:100)], linear.test$Nt[2,-c(1:100)])
+linear.test<-simmod_main(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e, dfrac, getBt=TRUE)
 
-analytical.solution(a2, linear.test$eb[,-c(1:100)], linear.test$ew[,-c(1:100)])
+#plot(linear.test$Nt[,1])
+
+#cor(linear.test$Nt[-c(1:burn),])
+#cor(linear.test$Bt[-c(1:burn),], use="pairwise.complete.obs")
+#cor(linear.test$env[-c(1:burn),])
 
 
+#plot(linear.test$Nt[,1])
 
-# nn<-200
-# 
-# set.seed(666)
-# hypercube<-optimumLHS(n=nn, k=6)
+analytical.solution(f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e)
 
+cor(linear.test$Nt[-c(1:burn),])
 
 ```
 
