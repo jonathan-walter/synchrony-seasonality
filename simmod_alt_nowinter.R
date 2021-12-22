@@ -1,6 +1,6 @@
 ## Main simulation model
 
-simmod_main<-function(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
+simmod_nowinter<-function(tmax, f0, kB, cor.ebij, cor.ewij, cor.ebew,
                       sd.e, dfrac=0, getBt=FALSE){
   
   library(mvtnorm)
@@ -48,9 +48,9 @@ simmod_main<-function(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
   }
   
   for(tt in 2:tmax){
-    fN <- exp(f0)*exp(-Nt[tt-1,]/kB)*exp(eb[tt,])
-    sN <- mymin(exp(s0)*exp(-(Nt[tt-1,]*fN)/kW)*exp(ew[tt,]))
-    Nt[tt,] <- Nt[tt-1,]*fN*sN
+    fN <- exp(f0)*exp(-Nt[tt-1,]/kB)*exp(eb[tt,])*exp(ew[tt,])
+    #sN <- mymin(exp(s0)*exp(-(Nt[tt-1,]*fN)/kW)*exp(ew[tt,]))
+    Nt[tt,] <- Nt[tt-1,]*fN#*sN
     
     if(dfrac > 0){
       Nt[tt,] <- colSums(dmat*Nt[tt,])
@@ -69,4 +69,4 @@ simmod_main<-function(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
   return(out)
 }
 
-  
+

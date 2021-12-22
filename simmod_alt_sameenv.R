@@ -1,6 +1,6 @@
 ## Main simulation model
 
-simmod_main<-function(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
+simmod_sameenv<-function(tmax, f0, kB, s0, kW, cor.eij,
                       sd.e, dfrac=0, getBt=FALSE){
   
   library(mvtnorm)
@@ -10,19 +10,14 @@ simmod_main<-function(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
   }
   
   #create environmental noise time series
-  sigma<-matrix(0, 4, 4)
+  sigma<-matrix(0, 2, 2)
   
-  sigma[2,1] <- cor.ebij*(sd.e^2)
-  sigma[3:4,1] <- cor.ebew*(sd.e^2)
-  sigma[3:4,2] <- cor.ebew*(sd.e^2)
-  sigma[4,3] <- cor.ewij*(sd.e^2)  
+  sigma[2,1] <- cor.eij*(sd.e^2)
   sigma <- sigma+t(sigma)
-  diag(sigma) <- rep(sd.e^2, 4)
+  diag(sigma) <- rep(sd.e^2, 2)
   
   env <- rmvnorm(tmax,sigma=sigma)
-  colnames(env) <- c("ebi","ebj","ewi","ewj")
-  eb <- env[,1:2]
-  ew <- env[,3:4]
+  colnames(env) <- c("ei","ej")
   
   #if needed, create dispersal matrix
   if(dfrac > 0){
@@ -48,8 +43,8 @@ simmod_main<-function(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
   }
   
   for(tt in 2:tmax){
-    fN <- exp(f0)*exp(-Nt[tt-1,]/kB)*exp(eb[tt,])
-    sN <- mymin(exp(s0)*exp(-(Nt[tt-1,]*fN)/kW)*exp(ew[tt,]))
+    fN <- exp(f0)*exp(-Nt[tt-1,]/kB)*exp(env[tt,])
+    sN <- mymin(exp(s0)*exp(-(Nt[tt-1,]*fN)/kW)*exp(env[tt,]))
     Nt[tt,] <- Nt[tt-1,]*fN*sN
     
     if(dfrac > 0){
@@ -69,4 +64,4 @@ simmod_main<-function(tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
   return(out)
 }
 
-  
+
