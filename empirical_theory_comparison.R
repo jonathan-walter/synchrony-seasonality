@@ -139,11 +139,11 @@ analytical.solution<-function(f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e
 
 ###
 # parameters across runs
-tmax = 5000
-burn = 2000
-cor.ebij = seq(0, 1, .1)
-cor.ewij = seq(0, 1, .1)
-replicates <- 50
+tmax = 2000
+burn = 1000
+cor.ebij = seq(0, 1, .05)
+cor.ewij = seq(0, 1, .05)
+replicates <- 2  # change to 25 for final run
 
 ## multiple scenario run 1 --------------------------------------------------------------------
 # define parameters and run 
@@ -220,7 +220,7 @@ for(xx in 1:length(cor.ebij)) {
 ## multiple scenario run --------------------------------------------------------------------
 # define parameters and run 
 
-f0 = 2.0
+f0 = 2.2
 kB = 100
 s0 = -0.1
 kW = 80
@@ -255,55 +255,68 @@ for(xx in 1:length(cor.ebij)) {
 
 ### Plotting
 
-quartz()
+quartz(height=6, width=4)
 pal<-colorRampPalette(colors=c("red","white","blue"))
-par(mfrow=c(3,3), mar=c(2.5,2.5,1.5,1), mgp=c(1.7,0.5,0))
+par(mfrow=c(3,2), mar=c(1,.5,.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
 # sim 1
 # analytical
 image(cor.ebij, cor.ewij, results.a, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+      xlab="", ylab="", xaxt="n", cex=1.25)
 contour(cor.ebij, cor.ewij, results.a, add=T)
+text(0.0,1.08,"a)", xpd=NA)
 
 #simulation
 image(cor.ebij, cor.ewij, simresults.a, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+      xlab="", ylab="", cex=1.25, xaxt="n", yaxt="n")
 contour(cor.ebij, cor.ewij, simresults.a, add=T)
+text(0.0,1.08,"b)", xpd=NA)
 
 # difference
-image(cor.ebij, cor.ewij, results.a-simresults.a, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
-contour(cor.ebij, cor.ewij, results.a-simresults.a, add=T)
+#image(cor.ebij, cor.ewij, results.a-simresults.a, zlim=c(-1,1), col=pal(50),
+#      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+#contour(cor.ebij, cor.ewij, results.a-simresults.a, add=T)
 
 # sim 2
 # analytical
 image(cor.ebij, cor.ewij, results.b, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+      xlab="", ylab="", xaxt="n", cex=1.25)
 contour(cor.ebij, cor.ewij, results.b, add=T)
+text(0.0,1.08,"c)", xpd=NA)
 
 #simulation
 image(cor.ebij, cor.ewij, simresults.b, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+      xlab="", ylab="", xaxt="n", yaxt="n", cex=1.25)
 contour(cor.ebij, cor.ewij, simresults.b, add=T)
+text(0.0,1.08,"d)", xpd=NA)
 
 # difference
-image(cor.ebij, cor.ewij, results.b-simresults.b, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
-contour(cor.ebij, cor.ewij, results.b-simresults.b, add=T)
+#image(cor.ebij, cor.ewij, results.b-simresults.b, zlim=c(-1,1), col=pal(50),
+#      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+#contour(cor.ebij, cor.ewij, results.b-simresults.b, add=T)
 
 # sim 3
 # analytical
 image(cor.ebij, cor.ewij, results.c, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+      xlab="", ylab="", cex=1.25)
 contour(cor.ebij, cor.ewij, results.c, add=T)
+text(0.0,1.08,"e)", xpd=NA)
 
 #simulation
 image(cor.ebij, cor.ewij, simresults.c, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+      xlab="", ylab="", yaxt="n", cex=1.25)
 contour(cor.ebij, cor.ewij, simresults.c, add=T)
+text(0.0,1.08,"f)", xpd=NA)
 
 # difference
-image(cor.ebij, cor.ewij, results.c-simresults.c, zlim=c(-1,1), col=pal(50),
-      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
-contour(cor.ebij, cor.ewij, results.c-simresults.c, add=T)
+#image(cor.ebij, cor.ewij, results.c-simresults.c, zlim=c(-1,1), col=pal(50),
+#      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
+#contour(cor.ebij, cor.ewij, results.c-simresults.c, add=T)
+
+mtext(expression(paste("Spatial synchrony of breeding season environment (", epsilon[b], ")")), 
+      1, outer=T,cex=0.8, line=1.2)
+mtext(expression(paste("Spatial synchrony of overwintering season environment (", epsilon[w], ")")),
+      2,outer=T,cex=0.8, line=1.2)
+mtext(expression(paste("Analytical")), 3, outer=T, cex=1, line=.3, adj=.2)
+mtext(expression(paste("Simuation")), 3, outer=T,cex=1, line=.5, adj=.85)
 
 
