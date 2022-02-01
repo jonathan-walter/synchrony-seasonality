@@ -82,8 +82,8 @@ prop <- seq(-0.9, 0, length.out=21)
 
 kB = 100
 kW = 85
-cor.ebij = .8
-cor.ewij = .1
+cor.ebij = .2
+cor.ewij = .8
 cor.ebew = 0
 sd.e = 0.05
 dfrac = 0
@@ -100,9 +100,9 @@ for(xx in 1:length(f0)) {
 
 ### Plotting
 
-quartz(height=6, width=3)
+quartz(height=6, width=6)
 pal<-colorRampPalette(colors=c("red","white","blue"))
-par(mfrow=c(3,1), mar=c(1,.5,.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
+par(mfrow=c(3,2), mar=c(1,.5,.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
 # sim 1
 # analytical
 image(cor.ebij, cor.ewij, results.a, zlim=c(-1,1), col=pal(50),
@@ -114,9 +114,12 @@ text(0.0,1.08,"a)", xpd=NA)
 # sim 2
 # analytical
 image(f0, prop, results.b, zlim=c(-1,1), col=pal(50),
-      xlab="", ylab="", xaxt="n", cex=1.25)
+      xlab="", ylab="", cex=1.25)
 contour(f0, prop, results.b, add=T)
 text(0.0,1.08,"b)", xpd=NA)
+text(1.2,-1., paste(expression("cor.ebij="), cor.ebij, 
+                     expression("and cor.ewij="), cor.ewij), xpd=NA)
+
 
 
 # sim 3
