@@ -1,3 +1,17 @@
+param.names <- c(expression(italic('f')[0])
+                 ,expression(italic('k'['B']))
+                 ,expression(italic('s')[0])
+                 ,expression(italic('k'['W']))
+                 ,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')'))
+                 ,expression(paste('cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
+                 ,expression(paste('cor(',italic(epsilon['b']),',', italic(epsilon['w']),')'))
+                 ,expression(paste('sd(', italic(epsilon), ')'))
+                 ,expression(italic('d'))
+                 #,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')','*\n',
+                 #                   'cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
+)
+
+
 rm(list=ls())
 
 library(rootSolve)
@@ -88,6 +102,7 @@ regime.check <- function(inlist){
   out <- rep(NA, length(inlist))
   for(ii in 1:length(out)){
     tmp <- inlist[[ii]]
+    tmp <- round(tmp, digits=3)
     if(tmp[length(tmp)] <= 0.1){
       out[ii] <- "check"
     }
@@ -108,6 +123,7 @@ burn = 1000
 #### 1. f0 and s0 heat map ####
 
 f0 <- seq(0.3, 2.45, length.out=21)
+#f0 <- c(0.5150, 0.6225, 0.7300, 0.8375)
 prop <- seq(-0.9, 0, length.out=21)
 
 kB = 100
@@ -120,33 +136,46 @@ dfrac = 0
 
 results.a <- matrix(NA, nrow=length(f0), ncol=length(prop))
 regimes <- matrix(NA, nrow=length(f0), ncol=length(prop))
-#det.a <- array(NA, c(length(f0), length(prop), tmax))
 
 for(xx in 1:length(f0)) {
   for(yy in 1:length(prop)) {
     s0 <- f0[xx]*prop[yy]
     results.a[xx,yy] <- analytical.solution(f0[xx], kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e)
     temp <- simmod_det(tmax, f0[xx], kB, s0, kW)
-    #det.a[xx,yy,] <- simmod_det(tmax, f0[xx], kB, s0, kW)
     regimes[xx,yy] <- regime.check(temp)
+    #if(regimes[xx,yy] == "overcompensatory") {
+    #  paste(expression("xx="), xx, expression("and yy="), yy)}
   }
 }
 regimes_clean <- ifelse(regimes == "overcompensatory", 1, 0)
 
-quartz(height=6, width=6)
+quartz(height=6, width=4)
+layout(matrix(c(1, 2, 2, 3,
+                4, 4, 5, 5,
+                6, 6, 7, 7,
+                8, 8, 9, 9), nrow=4, byrow=TRUE))
+#layout.show(n=9)
+
 pal<-colorRampPalette(colors=c("red","white","blue"))
-par(mfrow=c(3,2), mar=c(1,1.5,2.5,1), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
+#par(mfrow=c(3,2), mar=c(1,.5,.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
+par(mar=c(1,1,1,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,.5,1))
 # sim 1
 # analytical
-image(f0, prop, results.a, zlim=c(-1,1), col=pal(50),
-      xlab="", ylab="", cex=1.25)
-contour(f0, prop, results.a, add=T)
+plot.new()
+image(f0, prop, regimes_clean, zlim=c(-1,1), col=c("white", "darkolivegreen3"),
+            xlab="", ylab="", xaxt="n", cex=1.25)
+axis(side=1, tick=TRUE, labels=FALSE)
+text(x=1, y=-.6, "Undercompensatory", cex=.75)
+text(x=1.96, y=-.1, "Overcompensatory", cex=.75)
 text(0.35,.08,"a)", xpd=NA)
-text(1.3,-1.1, paste(expression("cor.ebij="), cor.ebij, 
-                     expression("and cor.ewij="), cor.ewij), xpd=NA)
+plot.new()
 
-image(f0, prop, regimes_clean, zlim=c(-1,1), col=pal(50),
-      xlab="", ylab="", cex=1.25)
+image(f0, prop, results.a, zlim=c(-1,1), col=pal(50),
+      xlab="", ylab="", xaxt="n", cex=1.25)
+ contour(f0, prop, results.a, add=T)
+ text(0.35,.08,"b)", xpd=NA)
+ text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
+                     expression("& cor.ewij="), cor.ewij), xpd=NA)
 
 #### 2. f0 and s0 heat map ####
 
@@ -162,21 +191,29 @@ sd.e = 0.05
 dfrac = 0
 
 results.b <- matrix(NA, nrow=length(f0), ncol=length(prop))
+regimes.b <- matrix(NA, nrow=length(f0), ncol=length(prop))
+
 
 for(xx in 1:length(f0)) {
   for(yy in 1:length(prop)) {
     s0 <- f0[xx]*prop[yy]
     results.b[xx,yy] <- analytical.solution(f0[xx], kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e)
+    temp <- simmod_det(tmax, f0[xx], kB, s0, kW)
+    regimes.b[xx,yy] <- regime.check(temp)
   }
 }
 
+regimes_clean.b <- ifelse(regimes.b == "overcompensatory", 1, 0)
 
 image(f0, prop, results.b, zlim=c(-1,1), col=pal(50),
-      xlab="", ylab="", cex=1.25)
+      xlab="", ylab="", xaxt="n", yaxt="n", cex=1.25)
 contour(f0, prop, results.b, add=T)
-text(0.35,.08,"b)", xpd=NA)
-text(1.3,-1.1, paste(expression("cor.ebij="), cor.ebij, 
-                     expression("and cor.ewij="), cor.ewij), xpd=NA)
+text(0.35,.08,"c)", xpd=NA)
+text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
+                     expression("& cor.ewij="), cor.ewij), xpd=NA)
+
+#image(f0, prop, regimes_clean.b, zlim=c(-1,1), col=pal(50),
+#      xlab="", ylab="", cex=1.25)
 
 #### 3. f0 and s0 heat map ####
 
@@ -192,20 +229,30 @@ sd.e = 0.05
 dfrac = 0
 
 results.c <- matrix(NA, nrow=length(f0), ncol=length(prop))
+regimes.c <- matrix(NA, nrow=length(f0), ncol=length(prop))
+
 
 for(xx in 1:length(f0)) {
   for(yy in 1:length(prop)) {
     s0 <- f0[xx]*prop[yy]
     results.c[xx,yy] <- analytical.solution(f0[xx], kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e)
+    temp <- simmod_det(tmax, f0[xx], kB, s0, kW)
+    regimes.c[xx,yy] <- regime.check(temp)
   }
 }
 
+regimes_clean.c <- ifelse(regimes.c == "overcompensatory", 1, 0)
+
+
 image(f0, prop, results.c, zlim=c(-1,1), col=pal(50),
-      xlab="", ylab="", cex=1.25)
+      xlab="", ylab="", xaxt="n", cex=1.25)
 contour(f0, prop, results.c, add=T)
-text(0.35,.08,"c)", xpd=NA)
-text(1.3,-1.1, paste(expression("cor.ebij="), cor.ebij, 
-                     expression("and cor.ewij="), cor.ewij), xpd=NA)
+text(0.35,.08,"d)", xpd=NA)
+text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
+                     expression("& cor.ewij="), cor.ewij), xpd=NA)
+
+#image(f0, prop, regimes_clean.c, zlim=c(-1,1), col=pal(50),
+#      xlab="", ylab="", cex=1.25)
 
 
 #### 4. f0 and s0 heat map ####
@@ -231,11 +278,11 @@ for(xx in 1:length(f0)) {
 }
 
 image(f0, prop, results.d, zlim=c(-1,1), col=pal(50),
-      xlab="", ylab="", cex=1.25)
+      xlab="", ylab="", xaxt="n", yaxt="n", cex=1.25)
 contour(f0, prop, results.d, add=T)
-text(0.35,.08,"d)", xpd=NA)
-text(1.3,-1.1, paste(expression("cor.ebij="), cor.ebij, 
-                     expression("and cor.ewij="), cor.ewij), xpd=NA)
+text(0.35,.08,"e)", xpd=NA)
+text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
+                     expression("& cor.ewij="), cor.ewij), xpd=NA)
 
 
 #### 5. f0 and s0 heat map ####
@@ -263,9 +310,9 @@ for(xx in 1:length(f0)) {
 image(f0, prop, results.e, zlim=c(-1,1), col=pal(50),
       xlab="", ylab="", cex=1.25)
 contour(f0, prop, results.e, add=T)
-text(0.35,.08,"e)", xpd=NA)
-text(1.3,-1.1, paste(expression("cor.ebij="), cor.ebij, 
-                     expression("and cor.ewij="), cor.ewij), xpd=NA)
+text(0.35,.08,"f)", xpd=NA)
+text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
+                     expression("& cor.ewij="), cor.ewij), xpd=NA)
 
 
 #### 6. f0 and s0 heat map ####
@@ -291,8 +338,13 @@ for(xx in 1:length(f0)) {
 }
 
 image(f0, prop, results.f, zlim=c(-1,1), col=pal(50),
-      xlab="", ylab="", cex=1.25)
+      xlab="", ylab="", yaxt="n", cex=1.25)
 contour(f0, prop, results.f, add=T)
-text(0.35,.08,"f)", xpd=NA)
-text(1.3,-1.1, paste(expression("cor.ebij="), cor.ebij, 
-                     expression("and cor.ewij="), cor.ewij), xpd=NA)
+text(0.35,.08,"g)", xpd=NA)
+text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
+                     expression("& cor.ewij="), cor.ewij), xpd=NA)
+
+mtext(expression(paste("Growth Rate (", f0, ")")), 
+      1, outer=T,cex=0.8, line=1.2)
+mtext(expression(paste("Survival Rate (", s0, ")")),
+      2,outer=T,cex=0.8, line=1.2)
