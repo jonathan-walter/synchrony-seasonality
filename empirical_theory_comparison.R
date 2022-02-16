@@ -143,7 +143,7 @@ tmax = 2000
 burn = 1000
 cor.ebij = seq(0, 1, .05)
 cor.ewij = seq(0, 1, .05)
-replicates <- 25  # change to 25 for final run
+replicates <- 75  # change to 75 for final run
 
 ## multiple scenario run 1 --------------------------------------------------------------------
 # define parameters and run 
