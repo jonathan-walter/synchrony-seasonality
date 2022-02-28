@@ -1,17 +1,3 @@
-param.names <- c(expression(italic('f')[0])
-                 ,expression(italic('k'['B']))
-                 ,expression(italic('s')[0])
-                 ,expression(italic('k'['W']))
-                 ,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')'))
-                 ,expression(paste('cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
-                 ,expression(paste('cor(',italic(epsilon['b']),',', italic(epsilon['w']),')'))
-                 ,expression(paste('sd(', italic(epsilon), ')'))
-                 ,expression(italic('d'))
-                 #,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')','*\n',
-                 #                   'cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
-)
-
-
 rm(list=ls())
 
 library(rootSolve)
@@ -168,13 +154,14 @@ axis(side=1, tick=TRUE, labels=FALSE)
 text(x=1, y=-.6, "Undercompensatory", cex=.75)
 text(x=1.96, y=-.1, "Overcompensatory", cex=.75)
 text(0.35,.08,"a)", xpd=NA)
+#mtext(expression(paste("Survival Rate (", italic('s')[0], ")")), 2, outer=F,cex=0.8, line=1.4)
 plot.new()
 
 image(f0, prop, results.a, zlim=c(-1,1), col=pal(50),
       xlab="", ylab="", xaxt="n", cex=1.25)
- contour(f0, prop, results.a, add=T)
- text(0.35,.08,"b)", xpd=NA)
- text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
+contour(f0, prop, results.a, add=T)
+text(0.35,.08,"b)", xpd=NA)
+text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
                      expression("& cor.ewij="), cor.ewij), xpd=NA)
 
 #### 2. f0 and s0 heat map ####
@@ -209,11 +196,11 @@ image(f0, prop, results.b, zlim=c(-1,1), col=pal(50),
       xlab="", ylab="", xaxt="n", yaxt="n", cex=1.25)
 contour(f0, prop, results.b, add=T)
 text(0.35,.08,"c)", xpd=NA)
+
+#text(1.5, .08, expression(paste("cor(", epsilon['bi'], ",", italic(epsilon['bj']),")")), xpd=NA)#, cor.ebij, 
+#                     expression("& cor.ewij="), cor.ewij), xpd=NA)
 text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
                      expression("& cor.ewij="), cor.ewij), xpd=NA)
-
-#image(f0, prop, regimes_clean.b, zlim=c(-1,1), col=pal(50),
-#      xlab="", ylab="", cex=1.25)
 
 #### 3. f0 and s0 heat map ####
 
@@ -344,7 +331,6 @@ text(0.35,.08,"g)", xpd=NA)
 text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
                      expression("& cor.ewij="), cor.ewij), xpd=NA)
 
-mtext(expression(paste("Growth Rate (", f0, ")")), 
-      1, outer=T,cex=0.8, line=1.2)
-mtext(expression(paste("Survival Rate (", s0, ")")),
-      2,outer=T,cex=0.8, line=1.2)
+mtext(expression(paste("Growth Rate (", italic('f')[0], ")")), 1, outer=T,cex=0.8, line=1.2)
+mtext(expression(paste("Survival Rate (", italic('s')[0], ")")), 2, outer=T,cex=0.8, line=1.2)
+
