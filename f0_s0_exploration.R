@@ -135,7 +135,8 @@ for(xx in 1:length(f0)) {
 }
 regimes_clean <- ifelse(regimes == "overcompensatory", 1, 0)
 
-quartz(height=6, width=4)
+#quartz(height=6, width=4)
+pdf(file="f0_s0_fig.pdf", width=4, height=6)
 layout(matrix(c(1, 2, 2, 3,
                 4, 4, 5, 5,
                 6, 6, 7, 7,
@@ -196,9 +197,6 @@ image(f0, prop, results.b, zlim=c(-1,1), col=pal(50),
       xlab="", ylab="", xaxt="n", yaxt="n", cex=1.25)
 contour(f0, prop, results.b, add=T)
 text(0.35,.08,"c)", xpd=NA)
-
-#text(1.5, .08, expression(paste("cor(", epsilon['bi'], ",", italic(epsilon['bj']),")")), xpd=NA)#, cor.ebij, 
-#                     expression("& cor.ewij="), cor.ewij), xpd=NA)
 text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
                      expression("& cor.ewij="), cor.ewij), xpd=NA)
 
@@ -333,4 +331,4 @@ text(1.5, .08, paste(expression("cor.ebij="), cor.ebij,
 
 mtext(expression(paste("Growth Rate (", italic('f')[0], ")")), 1, outer=T,cex=0.8, line=1.2)
 mtext(expression(paste("Survival Rate (", italic('s')[0], ")")), 2, outer=T,cex=0.8, line=1.2)
-
+dev.off()
