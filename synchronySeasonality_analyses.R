@@ -50,7 +50,7 @@ getCV <- function(inlist){
 regime.check <- function(inlist){
   out <- rep(NA, length(inlist))
   for(ii in 1:length(out)){
-    tmp <- inlist[[ii]]$Nt
+    tmp <- round(inlist[[ii]]$Nt, digits=3)
     if(tmp[length(tmp)] <= 0.1){
       out[ii] <- "check"
     }
@@ -114,7 +114,7 @@ analytical.solution<-function(f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e
 
 ## Simulation -- sensitivity of synchrony to model parameters -------------------------------------
 
-# nn<-200
+# nn<-300
 # set.seed(666)
 # hypercube<-optimumLHS(n=nn, k=9)
 # saveRDS(hypercube, "hypercube.rds")
@@ -176,7 +176,7 @@ sampres.sameenv <- data.frame(rhoN=getNtcor(sameenv.sample),
                               regime=regime.check(main.determ))
 
 #regression analysis -- undercompensatory
-lm.main.rhoN.uc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + cor.ewij + cor.ebew + sd.e + dfrac, 
+lm.main.rhoN.uc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + cor.ewij + cor.ebew + sd.e + dfrac,
                  data=sampres.main[sampres.main$regime=="undercompensatory",], na.action=na.exclude)
 summary(lm.main.rhoN.uc)
 #hist(resid(lm.main.rhoN))
@@ -187,14 +187,14 @@ lm.nowint.rhoN.uc<-lm(rhoN ~ f0 + kB + cor.ebij + cor.ewij + sd.e + dfrac + cor.
                    data=sampres.nowint[sampres.nowint$regime=="undercompensatory",], na.action=na.exclude)
 summary(lm.nowint.rhoN.uc)
 #hist(resid(lm.nowint.rhoN))
-plot(lm.nowint.rhoN.uc)
+#plot(lm.nowint.rhoN.uc)
 modsumm.nowint.uc<-summary(lm.nowint.rhoN.uc)
 
 lm.sameenv.rhoN.uc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + sd.e + dfrac,
                     data=sampres.sameenv[sampres.sameenv$regime=='undercompensatory',], na.action=na.exclude)
 summary(lm.sameenv.rhoN.uc)
 #hist(resid(lm.sameenv.rhoN.uc))
-plot(lm.sameenv.rhoN.uc)
+#plot(lm.sameenv.rhoN.uc)
 modsumm.sameenv.uc<-summary(lm.sameenv.rhoN.uc)
 
 #compile results into a figure
@@ -230,7 +230,7 @@ modsumm.nowint.oc<-summary(lm.nowint.rhoN.oc)
 lm.sameenv.rhoN.oc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + sd.e + dfrac,
                        data=sampres.sameenv[sampres.sameenv$regime=='overcompensatory',], na.action=na.exclude)
 summary(lm.sameenv.rhoN.oc)
-plot(lm.sameenv.rhoN.oc)
+#plot(lm.sameenv.rhoN.oc)
 modsumm.sameenv.oc<-summary(lm.sameenv.rhoN.oc)
 
 #compile results into a figure
@@ -256,28 +256,40 @@ param.names <- c(expression(italic('f')[0])
                  ,expression(italic('k'['B']))
                  ,expression(italic('s')[0])
                  ,expression(italic('k'['W']))
-                 ,expression(paste('cor(',epsilon,['b,i'], epsilon,['b,j']))
-                 ,expression('corewij')
-                 ,expression('corebew')
-                 ,expression(paste('sd(', epsilon, ')'))
-                 ,expression('d')            
+                 ,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')'))
+                 ,expression(paste('cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
+                 ,expression(paste('cor(',italic(epsilon['b']),',', italic(epsilon['w']),')'))
+                 ,expression(paste('sd(', italic(epsilon), ')'))
+                 ,expression(italic('d'))
+                 #,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')','*\n',
+                 #                   'cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
                  )
 
 
-par(mfrow=c(2,1), mar=c(4.1,4.1,2.1,1.1))
+b <- barplot(t(as.matrix(effects.comb.uc[,-2])), beside=T, plot=FALSE)
+pal <- c("grey20","grey80","grey90")
+
+png("figX_simsensitivity_barplot.png", units="in", res=300, width=5.5, height=6)
+
+par(mfrow=c(2,1), mar=c(5.3,4.1,1.6,1.1), mgp=c(2.8,0.8,0))
 
 barplot(t(as.matrix(effects.comb.uc[,-2])), beside=T, names.arg=param.names,
         legend.text=c("main", "no overwintering", "same environment"), ylim=c(-0.1,0.22),
-        args.legend=list(x="topleft",bty="n"), las=2)
+        args.legend=list(x="topleft",bty="n",cex=0.9), las=2, ylab="Effect size", col=pal)
 mtext("Undercompensatory", line=0.5)
+text(x=c(10.5, 14.5, 23.5, 27.5), y=0, "na", cex=0.5, pos=3, offset=0)
 
-barplot(t(as.matrix(effects.comb.oc[,-2])), beside=T, names.arg=effects.comb.uc$param, 
-        las=2, ylim=c(-0.1,0.22))
+
+barplot(t(as.matrix(effects.comb.oc[,-2])), beside=T, names.arg=param.names, 
+        las=2, ylim=c(-0.1,0.22), ylab="Effect size", col=pal)
 mtext("Overcompensatory", line=0.5)
+text(x=c(10.5, 14.5, 23.5, 27.5), y=0, "na", cex=0.5, pos=3, offset=0)
         #legend.text=c("main", "same environment", "no overwintering"),
         #args.legend=list(x="topleft",bty="n"), las=2, main = "overcompensatory dynamics")
 
-## TODO: make nice figure for manuscript
+dev.off()
+
+
 
 
 ## Simulations -- vary environmental synchrony, parameter set 1 -----------------------------------
@@ -293,8 +305,8 @@ f0 = 1
 kB = 100
 s0 = -0.1
 kW = 80
-cor.ebij = rep(expand.grid(rho,rho)[,1],each=25)
-cor.ewij = rep(expand.grid(rho,rho)[,2],each=25)
+cor.ebij = rep(expand.grid(rho,rho)[,1],each=75)
+cor.ewij = rep(expand.grid(rho,rho)[,2],each=75)
 cor.ebew = 0
 sd.e = 0.1
 dfrac = 0
@@ -328,8 +340,8 @@ f0 = 2
 kB = 100
 s0 = -0.1
 kW = 80
-cor.ebij = rep(expand.grid(rho,rho)[,1],each=25)
-cor.ewij = rep(expand.grid(rho,rho)[,2],each=25)
+cor.ebij = rep(expand.grid(rho,rho)[,1],each=75)
+cor.ewij = rep(expand.grid(rho,rho)[,2],each=75)
 cor.ebew = 0
 sd.e = 0.1
 dfrac = 0
@@ -400,108 +412,112 @@ diff.NtBtcor.main.oc <- Ntcor.main.oc - Btcor.main.oc
 pal<-colorRampPalette(colors=c("red","white","blue"))
 
 
+#make figure comparing main model to alternate
+
+png(paste0("~/GitHub/synchrony-seasonality/fig3_compare_alternates_",scentxt,".png"), 
+    units="in", res=300, width=6.5, height=4.71)
+
+par(mfrow=c(2,3), mar=c(1.8,3.1,2.5,0), mgp=c(1.7,0.5,0), tcl=-0.3, oma=c(1.25,0,0,1))
+
+#main model
+image(rho, rho, Ntcor.main.uc, xlab="", ylab="Overwintering synchrony", asp=1,
+      main="", col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.main.uc, add=T)
+mtext("Main model",3,line=0.1,cex=0.67)
+mtext("a)", at=0.01, cex=0.67, line=0.1)
+
+#alternate - no overwintering
+image(rho, rho, Ntcor.nowint.uc, xlab="", ylab="Overwintering synchrony", asp=1,
+      main="", col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.nowint.uc, add=T)
+mtext("Alt: no overwintering",3,line=0.1,cex=0.67)
+mtext("Undercompensatory",3,line=1.3, cex=0.67)
+mtext("b)", at=0.01, cex=0.67, line=0.1)
+
+
+#alternate - same environment
+plot(rho, Ntcor.sameenv.uc, pch=16, xlab="", ylab="Population synchrony")
+mtext("Alt: same environment",3,line=0.1,cex=0.67)
+mtext("c)", at=0.01, cex=0.67, line=0.1)
+
+
+#main model
+image(rho, rho, Ntcor.main.oc, xlab="", ylab="Overwintering synchrony", asp=1,
+      main="", col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.main.oc, add=T)
+mtext("Main model",3,line=0.1,cex=0.67)
+mtext("d)", at=0.01, cex=0.67, line=0.1)
+
+#alternate - no overwintering
+image(rho, rho, Ntcor.nowint.oc, xlab="", ylab="Overwintering synchrony", asp=1,
+      main="", col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.nowint.oc, add=T)
+mtext("Alt: no overwintering",3,line=0.1,cex=0.67)
+mtext("Overcompensatory",3,line=1.3, cex=0.67)
+mtext("e)", at=0.01, cex=0.67, line=0.1)
+
+#alternate - same environment
+plot(rho, Ntcor.sameenv.oc, pch=16, xlab="", ylab="Population synchrony")
+mtext("Alt: same environment",3,line=0.1,cex=0.67)
+mtext("f)", at=0.01, cex=0.67, line=0.1)
+
+
+mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.67,line=0.1)
+#mtext("Spatial synchrony of overwintering season environment",2,outer=T,cex=0.8,line=0)
+
+dev.off()
+
+
+
 ## Make figure comparing syncrhony in different seasons
-png(paste0("~/GitHub/synchrony-seasonality/fig4_compare_seasons_",scentxt,".png"), units="in", res=300, width=5.99, height=4.6)
+png(paste0("~/GitHub/synchrony-seasonality/fig4_compare_seasons_",scentxt,".png"), units="in", res=300, width=5.98, height=4.6)
 
 par(mfrow=c(2,3), mar=c(1.8,1.8,2.5,0), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(1.1,1,0,1))
 image(rho, rho, Ntcor.main.uc, xlab="", ylab="", asp=1,
       col=pal(50), zlim=c(-1,1))
 contour(rho, rho, Ntcor.main.uc, add=T)
-mtext("cor(Nt)", cex=0.8, line=0.1)
-text(0.05,0.95,"a)")
+mtext("cor(Nt)", cex=0.67, line=0.1)
+mtext("a)", at=0.01, cex=0.67, line=0.1)
 
 image(rho, rho, Btcor.main.uc, xlab="", ylab="", asp=1,
       col=pal(50), zlim=c(-1,1))
 contour(rho, rho, Btcor.main.uc, add=T)
-text(0.05,0.95,"b)")
-mtext("cor(Bt)", cex=0.8, line=0.1)
-mtext("Undercompensatory", line=1.3, cex=0.8)
+mtext("b)", at=0.01, cex=0.67, line=0.1)
+mtext("cor(Bt)", cex=0.67, line=0.1)
+mtext("Undercompensatory", line=1.3, cex=0.67)
 
 image(rho, rho, diff.NtBtcor.main.uc, xlab="", ylab="", asp=1,
       col=pal(50), zlim=c(-.6,.6))
 contour(rho, rho, diff.NtBtcor.main.uc, add=T)
-mtext("cor(Nt)-cor(Bt)", cex=0.8, line=0.1)
-text(0.05,0.95,"c)")
+mtext("cor(Nt)-cor(Bt)", cex=0.67, line=0.1)
+mtext("c)", at=0.01, cex=0.67, line=0.1)
 
 
 image(rho, rho, Ntcor.main.oc, xlab="", ylab="", asp=1,
       col=pal(50), zlim=c(-1,1))
 contour(rho, rho, Ntcor.main.oc, add=T)
-mtext("cor(Nt)", cex=0.8, line=0.1)
-text(0.05,0.95,"d)")
+mtext("cor(Nt)", cex=0.67, line=0.1)
+mtext("d)", at=0.01, cex=0.67, line=0.1)
 
 image(rho, rho, Btcor.main.oc, xlab="", ylab="", asp=1,
       col=pal(50), zlim=c(-1,1))
 contour(rho, rho, Btcor.main.oc, add=T)
-text(0.05,0.95,"e)")
-mtext("cor(Bt)", cex=0.8, line=0.1)
-mtext("Overcompensatory", line=1.3, cex=0.8)
+mtext("e)", at=0.01, cex=0.67, line=0.1)
+mtext("cor(Bt)", cex=0.67, line=0.1)
+mtext("Overcompensatory", line=1.3, cex=0.67)
 
 image(rho, rho, diff.NtBtcor.main.oc, xlab="", ylab="", asp=1,
       col=pal(50), zlim=c(-.6,.6))
 contour(rho, rho, diff.NtBtcor.main.oc, add=T)
-mtext("cor(Nt)-cor(Bt)", cex=0.8, line=0.1)
-text(0.05,0.95,"f)")
+mtext("cor(Nt)-cor(Bt)", cex=0.67, line=0.1)
+mtext("f)", at=0.01, cex=0.67, line=0.1)
 
-mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.8)
-mtext("Overwintering synchrony",2,outer=T,cex=0.8)
-
-dev.off()
-
-
-
-#make figure comparing main model to alternate
-
-png(paste0("~/GitHub/synchrony-seasonality/fig3_compare_alternates_",scentxt,".png"), 
-    units="in", res=300, width=5.99, height=4.6)
-
-par(mfrow=c(2,3), mar=c(1.8,1.8,2.5,0), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(1.1,1,0,1))
-
-#main model
-image(rho, rho, Ntcor.main.uc, xlab="", ylab="", asp=1,
-      main="", col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.main.uc, add=T)
-mtext("Main model",3,line=0.1,cex=0.8)
-text(0.05,0.95,"a)")
-
-#alternate - same environment
-plot(rho, Ntcor.sameenv.uc, pch=16, xlab="", ylab="")
-mtext("Alt: same environment",3,line=0.1,cex=0.8)
-mtext("Undercompensatory",3,line=1.3, cex=0.8)
-text(0.05,0.95,"b)")
-
-#alternate - no overwintering
-image(rho, rho, Ntcor.nowint.uc, xlab="", ylab="", asp=1,
-      main="", col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.nowint.uc, add=T)
-mtext("Alt: no overwintering",3,line=0.1,cex=0.8)
-text(0.05,0.95,"c)")
-
-#main model
-image(rho, rho, Ntcor.main.oc, xlab="", ylab="", asp=1,
-      main="", col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.main.oc, add=T)
-mtext("Main model",3,line=0.1,cex=0.8)
-text(0.05,0.95,"d)")
-
-#alternate - same environment
-plot(rho, Ntcor.sameenv.oc, pch=16, xlab="", ylab="")
-mtext("Alt: same environment",3,line=0.1,cex=0.8)
-mtext("Overcompensatory",3,line=1.3, cex=0.8)
-text(0.05,0.95,"e)")
-
-#alternate - no overwintering
-image(rho, rho, Ntcor.nowint.oc, xlab="", ylab="", asp=1,
-      main="", col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.nowint.oc, add=T)
-mtext("Alt: no overwintering",3,line=0.1,cex=0.8)
-text(0.05,0.95,"f)")
-
-
-mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.8,line=0)
-mtext("Spatial synchrony of overwintering season environment",2,outer=T,cex=0.8,line=0)
+mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.67)
+mtext("Spatial synchrony of overwintering environment",2,outer=T,cex=0.67)
 
 dev.off()
+
+
 
 
 ## Simulations -- vary environmental synchrony, parameter set 2 -----------------------------------
@@ -513,13 +529,13 @@ rho<-seq(0,1,by=0.05)
 
 tmax = 2000
 burn = 1000
-f0 = 1.5
+f0 = 1
 kB = 100
 s0 = -0.1
 kW = 80
-cor.ebij = rep(expand.grid(rho,rho)[,1],each=25)
-cor.ewij = rep(expand.grid(rho,rho)[,2],each=25)
-cor.ebew = 0.5
+cor.ebij = rep(expand.grid(rho,rho)[,1],each=75)
+cor.ewij = rep(expand.grid(rho,rho)[,2],each=75)
+cor.ebew = 0.2
 sd.e = 0.1
 dfrac = 0
 cor.eij = cor.ebij
@@ -530,122 +546,202 @@ ncores=detectCores()-4
 
 cl<-makeCluster(ncores)
 
-main.varrhos<-mcmapply(simmod_main, tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
-                       sd.e, dfrac, getBt=TRUE, SIMPLIFY=FALSE)
-nowint.varrhos<-mcmapply(simmod_nowinter, tmax, f0, kB, cor.ebij, cor.ewij, cor.ebew,
-                         sd.e, dfrac, getBt=FALSE, SIMPLIFY=FALSE)
-sameenv.varrhos<-mcmapply(simmod_sameenv, tmax, f0, kB, s0, kW, cor.eij, sd.e, dfrac, 
-                          getBt=TRUE, SIMPLIFY=FALSE)
+main.varrhos.uc<-mcmapply(simmod_main, tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
+                          sd.e, dfrac, getBt=TRUE, SIMPLIFY=FALSE)
+nowint.varrhos.uc<-mcmapply(simmod_nowinter, tmax, f0, kB, cor.ebij, cor.ewij, cor.ebew,
+                            sd.e, dfrac, getBt=FALSE, SIMPLIFY=FALSE)
+sameenv.varrhos.uc<-mcmapply(simmod_sameenv, tmax, f0, kB, s0, kW, cor.eij, sd.e, dfrac, 
+                             getBt=TRUE, SIMPLIFY=FALSE)
 
 stopCluster(cl)
 
 
-Ntcor.main<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(main.varrhos))
-Ntcor.main<-aggregate(Ntcor.main, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-Ntcor.main<-matrix(Ntcor.main$Ntcor, nrow=length(rho), ncol=length(rho))
 
-Ntcor.nowint<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(nowint.varrhos))
-Ntcor.nowint<-aggregate(Ntcor.nowint, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-Ntcor.nowint<-matrix(Ntcor.nowint$Ntcor, nrow=length(rho), ncol=length(rho))
+#overcompensatory
 
-Ntcor.sameenv<-data.frame(cor.ebij=cor.ebij, Ntcor=getNtcor(sameenv.varrhos))
-Ntcor.sameenv<-aggregate(Ntcor.sameenv, by=list(cor.ebij), FUN=mean, na.rm=T)$Ntcor
+#parameter set 1
+rho<-seq(0,1,by=0.05)
 
-
-CV.main<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, CV=getCV(main.varrhos))
-CV.main<-aggregate(CV.main, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-CV.main<-matrix(CV.main$CV, nrow=length(rho), ncol=length(rho))
-
-CV.nowint<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, CV=getCV(nowint.varrhos))
-CV.nowint<-aggregate(CV.nowint, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-CV.nowint<-matrix(CV.nowint$CV, nrow=length(rho), ncol=length(rho))
-
-CV.sameenv<-data.frame(cor.ebij=cor.ebij, CV=getCV(sameenv.varrhos))
-CV.sameenv<-aggregate(CV.sameenv, by=list(cor.ebij), FUN=mean, na.rm=T)$CV
+tmax = 2000
+burn = 1000
+f0 = 2
+kB = 100
+s0 = -0.1
+kW = 80
+cor.ebij = rep(expand.grid(rho,rho)[,1],each=75)
+cor.ewij = rep(expand.grid(rho,rho)[,2],each=75)
+cor.ebew = 0.2
+sd.e = 0.1
+dfrac = 0
+cor.eij = cor.ebij
 
 
-Btcor.main<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Btcor=getBtcor(main.varrhos))
-Btcor.main<-aggregate(Btcor.main, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-Btcor.main<-matrix(Btcor.main$Btcor, nrow=length(rho), ncol=length(rho))
+
+ncores=detectCores()-4
+
+cl<-makeCluster(ncores)
+
+main.varrhos.oc<-mcmapply(simmod_main, tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
+                          sd.e, dfrac, getBt=TRUE, SIMPLIFY=FALSE)
+nowint.varrhos.oc<-mcmapply(simmod_nowinter, tmax, f0, kB, cor.ebij, cor.ewij, cor.ebew,
+                            sd.e, dfrac, getBt=FALSE, SIMPLIFY=FALSE)
+sameenv.varrhos.oc<-mcmapply(simmod_sameenv, tmax, f0, kB, s0, kW, cor.eij, sd.e, dfrac, 
+                             getBt=TRUE, SIMPLIFY=FALSE)
+
+stopCluster(cl)
 
 
-diff.NtBtcor.main <- Ntcor.main - Btcor.main
+
+Ntcor.main.uc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(main.varrhos.uc))
+Ntcor.main.uc<-aggregate(Ntcor.main.uc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Ntcor.main.uc<-matrix(Ntcor.main.uc$Ntcor, nrow=length(rho), ncol=length(rho))
+
+Ntcor.nowint.uc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(nowint.varrhos.uc))
+Ntcor.nowint.uc<-aggregate(Ntcor.nowint.uc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Ntcor.nowint.uc<-matrix(Ntcor.nowint.uc$Ntcor, nrow=length(rho), ncol=length(rho))
+
+Ntcor.sameenv.uc<-data.frame(cor.ebij=cor.ebij, Ntcor=getNtcor(sameenv.varrhos.uc))
+Ntcor.sameenv.uc<-aggregate(Ntcor.sameenv.uc, by=list(cor.ebij), FUN=mean, na.rm=T)$Ntcor
+
+
+Ntcor.main.oc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(main.varrhos.oc))
+Ntcor.main.oc<-aggregate(Ntcor.main.oc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Ntcor.main.oc<-matrix(Ntcor.main.oc$Ntcor, nrow=length(rho), ncol=length(rho))
+
+Ntcor.nowint.oc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(nowint.varrhos.oc))
+Ntcor.nowint.oc<-aggregate(Ntcor.nowint.oc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Ntcor.nowint.oc<-matrix(Ntcor.nowint.oc$Ntcor, nrow=length(rho), ncol=length(rho))
+
+Ntcor.sameenv.oc<-data.frame(cor.ebij=cor.ebij, Ntcor=getNtcor(sameenv.varrhos.oc))
+Ntcor.sameenv.oc<-aggregate(Ntcor.sameenv.oc, by=list(cor.ebij), FUN=mean, na.rm=T)$Ntcor
+
+# CV.main<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, CV=getCV(main.varrhos))
+# CV.main<-aggregate(CV.main, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+# CV.main<-matrix(CV.main$CV, nrow=length(rho), ncol=length(rho))
+# 
+# CV.nowint<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, CV=getCV(nowint.varrhos))
+# CV.nowint<-aggregate(CV.nowint, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+# CV.nowint<-matrix(CV.nowint$CV, nrow=length(rho), ncol=length(rho))
+# 
+# CV.sameenv<-data.frame(cor.ebij=cor.ebij, CV=getCV(sameenv.varrhos))
+# CV.sameenv<-aggregate(CV.sameenv, by=list(cor.ebij), FUN=mean, na.rm=T)$CV
+
+
+Btcor.main.uc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Btcor=getBtcor(main.varrhos.uc))
+Btcor.main.uc<-aggregate(Btcor.main.uc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Btcor.main.uc<-matrix(Btcor.main.uc$Btcor, nrow=length(rho), ncol=length(rho))
+diff.NtBtcor.main.uc <- Ntcor.main.uc - Btcor.main.uc
+
+Btcor.main.oc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Btcor=getBtcor(main.varrhos.oc))
+Btcor.main.oc<-aggregate(Btcor.main.oc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Btcor.main.oc<-matrix(Btcor.main.oc$Btcor, nrow=length(rho), ncol=length(rho))
+diff.NtBtcor.main.oc <- Ntcor.main.oc - Btcor.main.oc
 
 pal<-colorRampPalette(colors=c("red","white","blue"))
-
-
-## Make figure comparing syncrhony in different seasons
-#png(paste0("~/GitHub/synchrony-seasonality/fig4_compare_seasons_",scentxt,".png"), units="in", res=300, width=6.1, height=2.3)
-
-par(mfrow=c(1,3), mar=c(1.8,1.8,1.5,0), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(1.1,1,0,1))
-image(rho, rho, Ntcor.main, xlab="", ylab="", asp=1, main="cor(Nt)",
-      col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.main, add=T)
-text(0.05,0.95,"a)")
-
-image(rho, rho, Btcor.main, xlab="", ylab="", asp=1, main="cor(Bt)",
-      col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Btcor.main, add=T)
-text(0.05,0.95,"b)")
-
-image(rho, rho, diff.NtBtcor.main, xlab="", ylab="", asp=1, main="cor(Nt)-cor(Bt)",
-      col=pal(50), zlim=c(-.6,.6))
-contour(rho, rho, diff.NtBtcor.main, add=T)
-text(0.05,0.95,"c)")
-
-mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.8)
-mtext("Overwintering synchrony",2,outer=T,cex=0.8)
-
-#dev.off()
-
-
 
 #make figure comparing main model to alternate
 
 png(paste0("~/GitHub/synchrony-seasonality/fig3_compare_alternates_",scentxt,".png"), 
-    units="in", res=300, width=6.1, height=4.7)
+    units="in", res=300, width=6.5, height=4.71)
 
-par(mfcol=c(2,3), mar=c(2,2,3.1,1), oma=c(1.5,1.5,0,0),mgp=c(2,0.6,0), tcl=-0.4)
+par(mfrow=c(2,3), mar=c(1.8,3.1,2.5,0), mgp=c(1.7,0.5,0), tcl=-0.3, oma=c(1.25,0,0,1))
 
 #main model
-image(rho, rho, Ntcor.main, xlab="", ylab="", asp=1,
+image(rho, rho, Ntcor.main.uc, xlab="", ylab="Overwintering synchrony", asp=1,
       main="", col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.main, add=T)
-mtext("Main model",3,line=0.1,cex=0.7)
-text(0.05,0.95,"a)")
-
-image(rho, rho, CV.main, xlab="", ylab="", asp=1,
-      main="", col=viridis(50))
-contour(rho, rho, CV.main, add=T)
-mtext("Main model",3,line=0.1, cex=0.7)
-text(0.05,0.95,"d)")
-
-#alternate - same environment
-plot(rho, Ntcor.sameenv, pch=16, xlab="", ylab="")
-mtext("Alt: same environment",3,line=0.1,cex=0.7)
-mtext("Spatial Synchrony",3,line=1.5, cex=0.9)
-text(0.05,0.95,"b)")
-
-plot(rho, CV.sameenv, pch=16, xlab="", ylab="")
-mtext("Alt: same environment",3,line=0.1,cex=0.7)
-mtext("Metapopulation CV",3,line=1.5, cex=0.9)
-text(0.05,0.95,"b)")
+contour(rho, rho, Ntcor.main.uc, add=T)
+mtext("Main model",3,line=0.1,cex=0.67)
+mtext("a)", at=0.01, cex=0.67, line=0.1)
 
 #alternate - no overwintering
-image(rho, rho, Ntcor.nowint, xlab="", ylab="", asp=1,
+image(rho, rho, Ntcor.nowint.uc, xlab="", ylab="Overwintering synchrony", asp=1,
       main="", col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.nowint, add=T)
-mtext("Alt: no overwintering",3,line=0.1,cex=0.7)
-text(0.05,0.95,"a)")
+contour(rho, rho, Ntcor.nowint.uc, add=T)
+mtext("Alt: no overwintering",3,line=0.1,cex=0.67)
+mtext("Undercompensatory",3,line=1.3, cex=0.67)
+mtext("b)", at=0.01, cex=0.67, line=0.1)
 
-image(rho, rho, CV.nowint, xlab="", ylab="", asp=1,
-      main="", col=viridis(50))
-contour(rho, rho, CV.nowint, add=T)
-mtext("Alt: no overwintering",3,line=0.1, cex=0.7)
-text(0.05,0.95,"d)")
 
-mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.9,line=0.1)
-mtext("Spatial synchrony of overwintering season environment",2,outer=T,cex=0.9,line=0.1)
+#alternate - same environment
+plot(rho, Ntcor.sameenv.uc, pch=16, xlab="", ylab="Population synchrony")
+mtext("Alt: same environment",3,line=0.1,cex=0.67)
+mtext("c)", at=0.01, cex=0.67, line=0.1)
+
+
+#main model
+image(rho, rho, Ntcor.main.oc, xlab="", ylab="Overwintering synchrony", asp=1,
+      main="", col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.main.oc, add=T)
+mtext("Main model",3,line=0.1,cex=0.67)
+mtext("d)", at=0.01, cex=0.67, line=0.1)
+
+#alternate - no overwintering
+image(rho, rho, Ntcor.nowint.oc, xlab="", ylab="Overwintering synchrony", asp=1,
+      main="", col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.nowint.oc, add=T)
+mtext("Alt: no overwintering",3,line=0.1,cex=0.67)
+mtext("Overcompensatory",3,line=1.3, cex=0.67)
+mtext("e)", at=0.01, cex=0.67, line=0.1)
+
+#alternate - same environment
+plot(rho, Ntcor.sameenv.oc, pch=16, xlab="", ylab="Population synchrony")
+mtext("Alt: same environment",3,line=0.1,cex=0.67)
+mtext("f)", at=0.01, cex=0.67, line=0.1)
+
+
+mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.67,line=0.1)
+#mtext("Spatial synchrony of overwintering season environment",2,outer=T,cex=0.8,line=0)
+
+dev.off()
+
+
+
+## Make figure comparing syncrhony in different seasons
+png(paste0("~/GitHub/synchrony-seasonality/fig4_compare_seasons_",scentxt,".png"), units="in", res=300, 
+    width=5.98, height=4.6)
+
+par(mfrow=c(2,3), mar=c(1.8,1.8,2.5,0), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(1.1,1,0,1))
+image(rho, rho, Ntcor.main.uc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.main.uc, add=T)
+mtext("cor(Nt)", cex=0.67, line=0.1)
+mtext("a)", at=0.01, cex=0.67, line=0.1)
+
+image(rho, rho, Btcor.main.uc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Btcor.main.uc, add=T)
+mtext("b)", at=0.01, cex=0.67, line=0.1)
+mtext("cor(Bt)", cex=0.67, line=0.1)
+mtext("Undercompensatory", line=1.3, cex=0.67)
+
+image(rho, rho, diff.NtBtcor.main.uc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-.6,.6))
+contour(rho, rho, diff.NtBtcor.main.uc, add=T)
+mtext("cor(Nt)-cor(Bt)", cex=0.67, line=0.1)
+mtext("c)", at=0.01, cex=0.67, line=0.1)
+
+
+image(rho, rho, Ntcor.main.oc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.main.oc, add=T)
+mtext("cor(Nt)", cex=0.67, line=0.1)
+mtext("d)", at=0.01, cex=0.67, line=0.1)
+
+image(rho, rho, Btcor.main.oc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Btcor.main.oc, add=T)
+mtext("e)", at=0.01, cex=0.67, line=0.1)
+mtext("cor(Bt)", cex=0.67, line=0.1)
+mtext("Overcompensatory", line=1.3, cex=0.67)
+
+image(rho, rho, diff.NtBtcor.main.oc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-.6,.6))
+contour(rho, rho, diff.NtBtcor.main.oc, add=T)
+mtext("cor(Nt)-cor(Bt)", cex=0.67, line=0.1)
+mtext("f)", at=0.01, cex=0.67, line=0.1)
+
+mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.67)
+mtext("Spatial synchrony of overwintering environment",2,outer=T,cex=0.67)
 
 dev.off()
 
@@ -654,17 +750,18 @@ dev.off()
 
 scentxt<-"set3"
 
+
 #parameter set 1
 rho<-seq(0,1,by=0.05)
 
 tmax = 2000
 burn = 1000
-f0 = 1.8
+f0 = 1
 kB = 100
 s0 = -0.1
 kW = 80
-cor.ebij = rep(expand.grid(rho,rho)[,1],each=25)
-cor.ewij = rep(expand.grid(rho,rho)[,2],each=25)
+cor.ebij = rep(expand.grid(rho,rho)[,1],each=75)
+cor.ewij = rep(expand.grid(rho,rho)[,2],each=75)
 cor.ebew = -0.2
 sd.e = 0.1
 dfrac = 0
@@ -676,123 +773,202 @@ ncores=detectCores()-4
 
 cl<-makeCluster(ncores)
 
-main.varrhos<-mcmapply(simmod_main, tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
-                       sd.e, dfrac, getBt=TRUE, SIMPLIFY=FALSE)
-nowint.varrhos<-mcmapply(simmod_nowinter, tmax, f0, kB, cor.ebij, cor.ewij, cor.ebew,
-                         sd.e, dfrac, getBt=FALSE, SIMPLIFY=FALSE)
-sameenv.varrhos<-mcmapply(simmod_sameenv, tmax, f0, kB, s0, kW, cor.eij, sd.e, dfrac, 
-                          getBt=TRUE, SIMPLIFY=FALSE)
+main.varrhos.uc<-mcmapply(simmod_main, tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
+                          sd.e, dfrac, getBt=TRUE, SIMPLIFY=FALSE)
+nowint.varrhos.uc<-mcmapply(simmod_nowinter, tmax, f0, kB, cor.ebij, cor.ewij, cor.ebew,
+                            sd.e, dfrac, getBt=FALSE, SIMPLIFY=FALSE)
+sameenv.varrhos.uc<-mcmapply(simmod_sameenv, tmax, f0, kB, s0, kW, cor.eij, sd.e, dfrac, 
+                             getBt=TRUE, SIMPLIFY=FALSE)
 
 stopCluster(cl)
 
 
-Ntcor.main<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(main.varrhos))
-Ntcor.main<-aggregate(Ntcor.main, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-Ntcor.main<-matrix(Ntcor.main$Ntcor, nrow=length(rho), ncol=length(rho))
 
-Ntcor.nowint<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(nowint.varrhos))
-Ntcor.nowint<-aggregate(Ntcor.nowint, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-Ntcor.nowint<-matrix(Ntcor.nowint$Ntcor, nrow=length(rho), ncol=length(rho))
+#overcompensatory
 
-Ntcor.sameenv<-data.frame(cor.ebij=cor.ebij, Ntcor=getNtcor(sameenv.varrhos))
-Ntcor.sameenv<-aggregate(Ntcor.sameenv, by=list(cor.ebij), FUN=mean, na.rm=T)$Ntcor
+#parameter set 1
+rho<-seq(0,1,by=0.05)
 
-
-CV.main<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, CV=getCV(main.varrhos))
-CV.main<-aggregate(CV.main, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-CV.main<-matrix(CV.main$CV, nrow=length(rho), ncol=length(rho))
-
-CV.nowint<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, CV=getCV(nowint.varrhos))
-CV.nowint<-aggregate(CV.nowint, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-CV.nowint<-matrix(CV.nowint$CV, nrow=length(rho), ncol=length(rho))
-
-CV.sameenv<-data.frame(cor.ebij=cor.ebij, CV=getCV(sameenv.varrhos))
-CV.sameenv<-aggregate(CV.sameenv, by=list(cor.ebij), FUN=mean, na.rm=T)$CV
+tmax = 2000
+burn = 1000
+f0 = 2
+kB = 100
+s0 = -0.1
+kW = 80
+cor.ebij = rep(expand.grid(rho,rho)[,1],each=75)
+cor.ewij = rep(expand.grid(rho,rho)[,2],each=75)
+cor.ebew = -0.2
+sd.e = 0.1
+dfrac = 0
+cor.eij = cor.ebij
 
 
-Btcor.main<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Btcor=getBtcor(main.varrhos))
-Btcor.main<-aggregate(Btcor.main, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
-Btcor.main<-matrix(Btcor.main$Btcor, nrow=length(rho), ncol=length(rho))
+
+ncores=detectCores()-4
+
+cl<-makeCluster(ncores)
+
+main.varrhos.oc<-mcmapply(simmod_main, tmax, f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew,
+                          sd.e, dfrac, getBt=TRUE, SIMPLIFY=FALSE)
+nowint.varrhos.oc<-mcmapply(simmod_nowinter, tmax, f0, kB, cor.ebij, cor.ewij, cor.ebew,
+                            sd.e, dfrac, getBt=FALSE, SIMPLIFY=FALSE)
+sameenv.varrhos.oc<-mcmapply(simmod_sameenv, tmax, f0, kB, s0, kW, cor.eij, sd.e, dfrac, 
+                             getBt=TRUE, SIMPLIFY=FALSE)
+
+stopCluster(cl)
 
 
-diff.NtBtcor.main <- Ntcor.main - Btcor.main
+
+Ntcor.main.uc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(main.varrhos.uc))
+Ntcor.main.uc<-aggregate(Ntcor.main.uc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Ntcor.main.uc<-matrix(Ntcor.main.uc$Ntcor, nrow=length(rho), ncol=length(rho))
+
+Ntcor.nowint.uc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(nowint.varrhos.uc))
+Ntcor.nowint.uc<-aggregate(Ntcor.nowint.uc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Ntcor.nowint.uc<-matrix(Ntcor.nowint.uc$Ntcor, nrow=length(rho), ncol=length(rho))
+
+Ntcor.sameenv.uc<-data.frame(cor.ebij=cor.ebij, Ntcor=getNtcor(sameenv.varrhos.uc))
+Ntcor.sameenv.uc<-aggregate(Ntcor.sameenv.uc, by=list(cor.ebij), FUN=mean, na.rm=T)$Ntcor
+
+
+Ntcor.main.oc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(main.varrhos.oc))
+Ntcor.main.oc<-aggregate(Ntcor.main.oc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Ntcor.main.oc<-matrix(Ntcor.main.oc$Ntcor, nrow=length(rho), ncol=length(rho))
+
+Ntcor.nowint.oc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Ntcor=getNtcor(nowint.varrhos.oc))
+Ntcor.nowint.oc<-aggregate(Ntcor.nowint.oc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Ntcor.nowint.oc<-matrix(Ntcor.nowint.oc$Ntcor, nrow=length(rho), ncol=length(rho))
+
+Ntcor.sameenv.oc<-data.frame(cor.ebij=cor.ebij, Ntcor=getNtcor(sameenv.varrhos.oc))
+Ntcor.sameenv.oc<-aggregate(Ntcor.sameenv.oc, by=list(cor.ebij), FUN=mean, na.rm=T)$Ntcor
+
+# CV.main<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, CV=getCV(main.varrhos))
+# CV.main<-aggregate(CV.main, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+# CV.main<-matrix(CV.main$CV, nrow=length(rho), ncol=length(rho))
+# 
+# CV.nowint<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, CV=getCV(nowint.varrhos))
+# CV.nowint<-aggregate(CV.nowint, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+# CV.nowint<-matrix(CV.nowint$CV, nrow=length(rho), ncol=length(rho))
+# 
+# CV.sameenv<-data.frame(cor.ebij=cor.ebij, CV=getCV(sameenv.varrhos))
+# CV.sameenv<-aggregate(CV.sameenv, by=list(cor.ebij), FUN=mean, na.rm=T)$CV
+
+
+Btcor.main.uc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Btcor=getBtcor(main.varrhos.uc))
+Btcor.main.uc<-aggregate(Btcor.main.uc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Btcor.main.uc<-matrix(Btcor.main.uc$Btcor, nrow=length(rho), ncol=length(rho))
+diff.NtBtcor.main.uc <- Ntcor.main.uc - Btcor.main.uc
+
+Btcor.main.oc<-data.frame(cor.ebij=cor.ebij, cor.ewij=cor.ewij, Btcor=getBtcor(main.varrhos.oc))
+Btcor.main.oc<-aggregate(Btcor.main.oc, by=list(cor.ebij, cor.ewij), FUN=mean, na.rm=T)
+Btcor.main.oc<-matrix(Btcor.main.oc$Btcor, nrow=length(rho), ncol=length(rho))
+diff.NtBtcor.main.oc <- Ntcor.main.oc - Btcor.main.oc
 
 pal<-colorRampPalette(colors=c("red","white","blue"))
-
-
-## Make figure comparing syncrhony in different seasons
-png(paste0("~/GitHub/synchrony-seasonality/fig4_compare_seasons_",scentxt,".png"), units="in", res=300, width=6.1, height=2.3)
-
-par(mfrow=c(1,3), mar=c(1.8,1.8,1.5,0), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(1.1,1,0,1))
-image(rho, rho, Ntcor.main, xlab="", ylab="", asp=1, main="cor(Nt)",
-      col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.main, add=T)
-text(0.05,0.95,"a)")
-
-image(rho, rho, Btcor.main, xlab="", ylab="", asp=1, main="cor(Bt)",
-      col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Btcor.main, add=T)
-text(0.05,0.95,"b)")
-
-image(rho, rho, diff.NtBtcor.main, xlab="", ylab="", asp=1, main="cor(Nt)-cor(Bt)",
-      col=pal(50), zlim=c(-.6,.6))
-contour(rho, rho, diff.NtBtcor.main, add=T)
-text(0.05,0.95,"c)")
-
-mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.8)
-mtext("Overwintering synchrony",2,outer=T,cex=0.8)
-
-dev.off()
-
 
 
 #make figure comparing main model to alternate
 
 png(paste0("~/GitHub/synchrony-seasonality/fig3_compare_alternates_",scentxt,".png"), 
-    units="in", res=300, width=6.1, height=4.7)
+    units="in", res=300, width=6.5, height=4.71)
 
-par(mfcol=c(2,3), mar=c(2,2,3.1,1), oma=c(1.5,1.5,0,0),mgp=c(2,0.6,0), tcl=-0.4)
+par(mfrow=c(2,3), mar=c(1.8,3.1,2.5,0), mgp=c(1.7,0.5,0), tcl=-0.3, oma=c(1.25,0,0,1))
 
 #main model
-image(rho, rho, Ntcor.main, xlab="", ylab="", asp=1,
+image(rho, rho, Ntcor.main.uc, xlab="", ylab="Overwintering synchrony", asp=1,
       main="", col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.main, add=T)
-mtext("Main model",3,line=0.1,cex=0.7)
-text(0.05,0.95,"a)")
-
-image(rho, rho, CV.main, xlab="", ylab="", asp=1,
-      main="", col=viridis(50))
-contour(rho, rho, CV.main, add=T)
-mtext("Main model",3,line=0.1, cex=0.7)
-text(0.05,0.95,"d)")
-
-#alternate - same environment
-plot(rho, Ntcor.sameenv, pch=16, xlab="", ylab="")
-mtext("Alt: same environment",3,line=0.1,cex=0.7)
-mtext("Spatial Synchrony",3,line=1.5, cex=0.9)
-text(0.05,0.95,"b)")
-
-plot(rho, CV.sameenv, pch=16, xlab="", ylab="")
-mtext("Alt: same environment",3,line=0.1,cex=0.7)
-mtext("Metapopulation CV",3,line=1.5, cex=0.9)
-text(0.05,0.95,"b)")
+contour(rho, rho, Ntcor.main.uc, add=T)
+mtext("Main model",3,line=0.1,cex=0.67)
+mtext("a)", at=0.01, cex=0.67, line=0.1)
 
 #alternate - no overwintering
-image(rho, rho, Ntcor.nowint, xlab="", ylab="", asp=1,
+image(rho, rho, Ntcor.nowint.uc, xlab="", ylab="Overwintering synchrony", asp=1,
       main="", col=pal(50), zlim=c(-1,1))
-contour(rho, rho, Ntcor.nowint, add=T)
-mtext("Alt: no overwintering",3,line=0.1,cex=0.7)
-text(0.05,0.95,"a)")
+contour(rho, rho, Ntcor.nowint.uc, add=T)
+mtext("Alt: no overwintering",3,line=0.1,cex=0.67)
+mtext("Undercompensatory",3,line=1.3, cex=0.67)
+mtext("b)", at=0.01, cex=0.67, line=0.1)
 
-image(rho, rho, CV.nowint, xlab="", ylab="", asp=1,
-      main="", col=viridis(50))
-contour(rho, rho, CV.nowint, add=T)
-mtext("Alt: no overwintering",3,line=0.1, cex=0.7)
-text(0.05,0.95,"d)")
 
-mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.9,line=0.1)
-mtext("Spatial synchrony of overwintering season environment",2,outer=T,cex=0.9,line=0.1)
+#alternate - same environment
+plot(rho, Ntcor.sameenv.uc, pch=16, xlab="", ylab="Population synchrony")
+mtext("Alt: same environment",3,line=0.1,cex=0.67)
+mtext("c)", at=0.01, cex=0.67, line=0.1)
+
+
+#main model
+image(rho, rho, Ntcor.main.oc, xlab="", ylab="Overwintering synchrony", asp=1,
+      main="", col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.main.oc, add=T)
+mtext("Main model",3,line=0.1,cex=0.67)
+mtext("d)", at=0.01, cex=0.67, line=0.1)
+
+#alternate - no overwintering
+image(rho, rho, Ntcor.nowint.oc, xlab="", ylab="Overwintering synchrony", asp=1,
+      main="", col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.nowint.oc, add=T)
+mtext("Alt: no overwintering",3,line=0.1,cex=0.67)
+mtext("Overcompensatory",3,line=1.3, cex=0.67)
+mtext("e)", at=0.01, cex=0.67, line=0.1)
+
+#alternate - same environment
+plot(rho, Ntcor.sameenv.oc, pch=16, xlab="", ylab="Population synchrony")
+mtext("Alt: same environment",3,line=0.1,cex=0.67)
+mtext("f)", at=0.01, cex=0.67, line=0.1)
+
+
+mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.67,line=0.1)
+#mtext("Spatial synchrony of overwintering season environment",2,outer=T,cex=0.8,line=0)
 
 dev.off()
 
+
+
+## Make figure comparing syncrhony in different seasons
+png(paste0("~/GitHub/synchrony-seasonality/fig4_compare_seasons_",scentxt,".png"), units="in", res=300, width=5.99, height=4.6)
+
+par(mfrow=c(2,3), mar=c(1.8,1.8,2.5,0), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(1.1,1,0,1))
+image(rho, rho, Ntcor.main.uc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.main.uc, add=T)
+mtext("cor(Nt)", cex=0.67, line=0.1)
+mtext("a)", at=0.01, cex=0.67, line=0.1)
+
+image(rho, rho, Btcor.main.uc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Btcor.main.uc, add=T)
+mtext("b)", at=0.01, cex=0.67, line=0.1)
+mtext("cor(Bt)", cex=0.67, line=0.1)
+mtext("Undercompensatory", line=1.3, cex=0.67)
+
+image(rho, rho, diff.NtBtcor.main.uc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-.7,.7))
+contour(rho, rho, diff.NtBtcor.main.uc, add=T)
+mtext("cor(Nt)-cor(Bt)", cex=0.67, line=0.1)
+mtext("c)", at=0.01, cex=0.67, line=0.1)
+
+
+image(rho, rho, Ntcor.main.oc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Ntcor.main.oc, add=T)
+mtext("cor(Nt)", cex=0.67, line=0.1)
+mtext("d)", at=0.01, cex=0.67, line=0.1)
+
+image(rho, rho, Btcor.main.oc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-1,1))
+contour(rho, rho, Btcor.main.oc, add=T)
+mtext("e)", at=0.01, cex=0.67, line=0.1)
+mtext("cor(Bt)", cex=0.67, line=0.1)
+mtext("Overcompensatory", line=1.3, cex=0.67)
+
+image(rho, rho, diff.NtBtcor.main.oc, xlab="", ylab="", asp=1,
+      col=pal(50), zlim=c(-.4,.4))
+contour(rho, rho, diff.NtBtcor.main.oc, add=T)
+mtext("cor(Nt)-cor(Bt)", cex=0.67, line=0.1)
+mtext("f)", at=0.01, cex=0.67, line=0.1)
+
+mtext("Spatial synchrony of breeding season environment",1,outer=T,cex=0.67)
+mtext("Spatial synchrony of overwintering environment",2,outer=T,cex=0.67)
+
+dev.off()
 
