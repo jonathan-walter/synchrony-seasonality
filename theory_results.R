@@ -56,9 +56,9 @@ burn = 1000
 
 #### Plotting set up ####
 
-quartz(height=6, width=3)
+quartz(height=6, width=4)
 pal<-colorRampPalette(colors=c("red","white","blue"))
-par(mfrow=c(3,1), mar=c(1,.5,.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
+par(mfrow=c(3,1), mar=c(1.5,1.5,1.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
 
 # text(0.0,1.08,"a)", xpd=NA)
 
@@ -85,6 +85,12 @@ image(cor.ebij, cor.ewij, results.a, zlim=c(-1,1), col=pal(50),
       xlab="", ylab="", cex=1.25)
 contour(cor.ebij, cor.ewij, results.a, add=T)
 text(0.0,1.08,"a)", xpd=NA)
+mtext(expression(paste("Synchrony of breeding season environment (", epsilon[b], ")")), 
+      1, outer=F,cex=0.75, line=1.7)
+mtext(expression(paste("Synchrony of overwintering")),
+      2,outer=F,cex=0.75, line=2.5)
+mtext(expression(paste("season environment (", epsilon[w], ")")),
+      2,outer=F,cex=0.75, line=1.4)
 
 #### f0 and s0 heat map ####
 
@@ -115,30 +121,62 @@ text(0.35,.08,"b)", xpd=NA)
 #text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
 #                     expression("& cor.ewij="), cor.ewij), xpd=NA)
 
+mtext(expression(paste("Growth Rate (", italic('f')[0], ")")), 1, outer=F,cex=0.75, line=1.7)
+mtext(expression(paste("Relative Survival (", italic(hat('s'))[0], ")")), 2, outer=F,cex=0.75, line=1.7)
 
 #### cor(eB,eW) figure ####
 
 f0_1 <- .4
-s0_1 <- .9
+prop_1 <- 1
+s0_1 <- f0_1*prop_1
 
-f0_2 <- 1.2
-s0_2 <- .9
+f0_2 <- 1.8
+prop_2 <- 0
+s0_2 <- f0_2*prop_2
 
 f0_3 <- 2.4
-s0_3 <- .9
+prop_3 <- -.1
+s0_3 <- f0_3*prop_3
+
+f0_4 <- .6
+prop_4 <- -.7
+s0_4 <- f0_4*prop_4
+
 
 kB = 100
 kW = 85
 cor.ebij = .3
 cor.ewij = .1
-cor.ebew = .1#seq(-.8,.8,.05)
+cor.ebew = seq(-.5,.5,.05)
 sd.e = 0.05
 dfrac = 0
 
 results.c <- rep(NA, length=length(cor.ebew))
+results.d <- rep(NA, length=length(cor.ebew))
+results.e <- rep(NA, length=length(cor.ebew))
+results.f <- rep(NA, length=length(cor.ebew))
 
 for(xx in 1:length(cor.ebew)) {
-    results.c[xx,yy] <- analytical.solution(f0_1, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew[xx], sd.e)
+    results.c[xx] <- analytical.solution(f0_1, kB, s0_1, kW, cor.ebij, cor.ewij, cor.ebew[xx], sd.e)
+    results.d[xx] <- analytical.solution(f0_2, kB, s0_2, kW, cor.ebij, cor.ewij, cor.ebew[xx], sd.e)
+    results.e[xx] <- analytical.solution(f0_3, kB, s0_3, kW, cor.ebij, cor.ewij, cor.ebew[xx], sd.e)
+    results.f[xx] <- analytical.solution(f0_4, kB, s0_4, kW, cor.ebij, cor.ewij, cor.ebew[xx], sd.e)
+    
 }
+
+my_min <- min(c(results.c, results.d, results.e, results.f))
+my_max <- max(c(results.c, results.d, results.e, results.f))
+
+plot(cor.ebew, results.c, ylim=c(my_min-0.05, my_max+0.05), col="black", lwd=2, type="l",
+     xlab="Cor Eb, Ew", ylab="Population Synchrony")
+lines(cor.ebew, results.d,  col="blue", lwd=2)
+lines(cor.ebew, results.e,  col="red", lwd=2)
+lines(cor.ebew, results.f,  col="darkgreen", lwd=2)
+text(-.45,.5,"c)", xpd=NA)
+
+mtext(expression(paste("Growth Rate (", italic('f')[0], ")")), 1, outer=F,cex=0.75, line=1.7)
+mtext(expression(paste("Relative Survival (", italic(hat('s'))[0], ")")), 2, outer=F,cex=0.75, line=1.7)
+
+
 
 

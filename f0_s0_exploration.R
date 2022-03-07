@@ -330,5 +330,6 @@ text(1.5, .08, paste(expression("cor.ebij="), cor.ebij,
                      expression("& cor.ewij="), cor.ewij), xpd=NA)
 
 mtext(expression(paste("Growth Rate (", italic('f')[0], ")")), 1, outer=T,cex=0.8, line=1.2)
-mtext(expression(paste("Survival Rate (", italic('s')[0], ")")), 2, outer=T,cex=0.8, line=1.2)
+mtext(expression(paste("Relative Survival (", italic(hat('s'))[0], ")")), 2, outer=T,cex=0.8, line=1.2)
+#mtext(expression(paste("Survival Rate (", italic('s')[0], ")")), 2, outer=T,cex=0.8, line=1.2)
 dev.off()
