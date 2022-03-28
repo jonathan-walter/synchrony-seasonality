@@ -56,9 +56,10 @@ burn = 1000
 
 #### Plotting set up ####
 
-quartz(height=6, width=4)
+#quartz(height=6, width=4)
+pdf(file="fig_analytical.pdf", width=3, height=6)
 pal<-colorRampPalette(colors=c("red","white","blue"))
-par(mfrow=c(3,1), mar=c(1.5,1.5,1.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
+par(mfrow=c(3,1), mar=c(3,1.5,1.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(2,3,1,1))
 
 # text(0.0,1.08,"a)", xpd=NA)
 
@@ -84,7 +85,7 @@ for(xx in 1:length(cor.ebij)) {
 image(cor.ebij, cor.ewij, results.a, zlim=c(-1,1), col=pal(50),
       xlab="", ylab="", cex=1.25)
 contour(cor.ebij, cor.ewij, results.a, add=T)
-text(0.0,1.08,"a)", xpd=NA)
+text(0.02,1.08,"a)", xpd=NA)
 mtext(expression(paste("Synchrony of breeding season environment (", epsilon[b], ")")), 
       1, outer=F,cex=0.75, line=1.7)
 mtext(expression(paste("Synchrony of overwintering")),
@@ -121,8 +122,8 @@ text(0.35,.08,"b)", xpd=NA)
 #text(1.5, .08, paste(expression("cor.ebij="), cor.ebij, 
 #                     expression("& cor.ewij="), cor.ewij), xpd=NA)
 
-mtext(expression(paste("Growth Rate (", italic('f')[0], ")")), 1, outer=F,cex=0.75, line=1.7)
-mtext(expression(paste("Relative Survival (", italic(hat('s'))[0], ")")), 2, outer=F,cex=0.75, line=1.7)
+mtext(expression(paste("Growth rate (", italic('f')[0], ")")), 1, outer=F,cex=0.75, line=1.7)
+mtext(expression(paste("Relative survival (", italic(hat('s'))[0], ")")), 2, outer=F,cex=0.75, line=1.7)
 
 #### cor(eB,eW) figure ####
 
@@ -167,16 +168,15 @@ for(xx in 1:length(cor.ebew)) {
 my_min <- min(c(results.c, results.d, results.e, results.f))
 my_max <- max(c(results.c, results.d, results.e, results.f))
 
-plot(cor.ebew, results.c, ylim=c(my_min-0.05, my_max+0.05), col="black", lwd=2, type="l",
-     xlab="Cor Eb, Ew", ylab="Population Synchrony")
+plot(cor.ebew, results.c, ylim=c(my_min-0.05, my_max+0.1), col="black", lwd=2, type="l",
+     xlab="", ylab="")
 lines(cor.ebew, results.d,  col="blue", lwd=2)
 lines(cor.ebew, results.e,  col="red", lwd=2)
 lines(cor.ebew, results.f,  col="darkgreen", lwd=2)
-text(-.45,.5,"c)", xpd=NA)
+text(-.5,.7,"c)", xpd=NA)
+#text(0.35,.08,"b)", xpd=NA)
 
-mtext(expression(paste("Growth Rate (", italic('f')[0], ")")), 1, outer=F,cex=0.75, line=1.7)
-mtext(expression(paste("Relative Survival (", italic(hat('s'))[0], ")")), 2, outer=F,cex=0.75, line=1.7)
+mtext(expression(paste("Cross season synchrony, cor(", epsilon[b], ",", epsilon[w], ")")), 1, outer=F,cex=0.75, line=1.7)
+mtext(expression(paste("Population synchrony")), 2, outer=F,cex=0.75, line=1.7)
 
-
-
-
+dev.off()
