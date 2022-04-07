@@ -127,8 +127,8 @@ mtext(expression(paste("Relative survival (", italic(hat('s'))[0], ")")), 2, out
 
 #### cor(eB,eW) figure ####
 
-f0_1 <- .4
-prop_1 <- 1
+f0_1 <- 1.2
+prop_1 <- -.4
 s0_1 <- f0_1*prop_1
 
 f0_2 <- 1.8
