@@ -217,7 +217,7 @@ for(xx in 1:length(cor.ebij)) {
   }
 }
 
-## multiple scenario run --------------------------------------------------------------------
+## multiple scenario run 3 --------------------------------------------------------------------
 # define parameters and run 
 
 f0 = 2.2
