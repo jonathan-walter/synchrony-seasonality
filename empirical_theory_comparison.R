@@ -312,9 +312,9 @@ text(0.0,1.08,"f)", xpd=NA)
 #      xlab=expression(epsilon[b]), ylab=expression(epsilon[w]), cex=1.25)
 #contour(cor.ebij, cor.ewij, results.c-simresults.c, add=T)
 
-mtext(expression(paste("Spatial synchrony of breeding season environment (", epsilon[b], ")")), 
+mtext(expression(paste("Spatial synchrony of breeding season environment (", epsilon[B], ")")), 
       1, outer=T,cex=0.8, line=1.2)
-mtext(expression(paste("Spatial synchrony of overwintering season environment (", epsilon[w], ")")),
+mtext(expression(paste("Spatial synchrony of overwintering season environment (", epsilon[W], ")")),
       2,outer=T,cex=0.8, line=1.2)
 mtext(expression(paste("Analytical")), 3, outer=T, cex=1, line=.3, adj=.2)
 mtext(expression(paste("Simuation")), 3, outer=T,cex=1, line=.5, adj=.85)

@@ -86,11 +86,11 @@ image(cor.ebij, cor.ewij, results.a, zlim=c(-1,1), col=pal(50),
       xlab="", ylab="", cex=1.25)
 contour(cor.ebij, cor.ewij, results.a, add=T)
 text(0.02,1.08,"a)", xpd=NA)
-mtext(expression(paste("Synchrony of breeding season environment (", epsilon[b], ")")), 
+mtext(expression(paste("Synchrony of breeding season environ. (", epsilon[B], ")")), 
       1, outer=F,cex=0.75, line=1.7)
 mtext(expression(paste("Synchrony of overwintering")),
       2,outer=F,cex=0.75, line=2.5)
-mtext(expression(paste("season environment (", epsilon[w], ")")),
+mtext(expression(paste("season environment (", epsilon[W], ")")),
       2,outer=F,cex=0.75, line=1.4)
 
 #### f0 and s0 heat map ####
@@ -176,7 +176,7 @@ lines(cor.ebew, results.f,  col="darkgreen", lwd=2)
 text(-.5,.7,"c)", xpd=NA)
 #text(0.35,.08,"b)", xpd=NA)
 
-mtext(expression(paste("Cross season synchrony, cor(", epsilon[b], ",", epsilon[w], ")")), 1, outer=F,cex=0.75, line=1.7)
+mtext(expression(paste("Cross season synchrony, cor(", epsilon[B], ",", epsilon[W], ")")), 1, outer=F,cex=0.75, line=1.7)
 mtext(expression(paste("Population synchrony")), 2, outer=F,cex=0.75, line=1.7)
 
 dev.off()
