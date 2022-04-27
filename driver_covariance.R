@@ -128,3 +128,28 @@ axis(2, at=seq(0,1,length.out=5), las=2,
      labels=round(seq(min(diag(cor_b1w2), na.rm=T), max(diag(cor_b1w2), na.rm=T), length.out=5), digits=2))
 
 dev.off()
+
+
+
+## nicer figures for manuscript
+
+png("~/GitHub/synchrony-seasonality/fig_sup_crossCorHist.png", units="in", res=300, width=4.5, height=4.5)
+
+par(mar=c(4.1,4.1,1.1,1.1))
+hist(cor_b1w2, xlab="Cross-variable synchrony\n(Pearson correlation)", main="")
+abline(v=median(cor_b1w2, na.rm=T), lwd=2, lty=2)
+
+dev.off()
+
+
+png("~/GitHub/synchrony-seasonality/fig_sup_distdecay.png", units="in", res=300, width=4.5, height=4.5)
+
+par(mar=c(4.1,4.1,1.1,1.1))
+plot(distKm, cor_b1w2, pch=16, col="lightgrey", cex=0.2, ylim=c(-1,1), xlab="Distance (Km)", 
+     ylab="Cross-variable synchrony")
+lines(sync_eBeW$real$predicted$x, sync_eBeW$real$predicted$y, lwd=2)
+lines(sync_eBeW$real$predicted$x, sync_eBeW$boot$boot.summary$predicted$y[2,], lwd=1, lty=2)
+lines(sync_eBeW$real$predicted$x, sync_eBeW$boot$boot.summary$predicted$y[10,], lwd=1, lty=2)
+
+dev.off()
+

@@ -12,6 +12,8 @@ library(parallel)
 library(lhs)
 library(dplyr)
 library(viridis)
+library(party)
+library(randomForest)
 
 ## source and define helper functions -------------------------------------------------------------
 source("simmod_main.R")
@@ -175,16 +177,59 @@ sampres.sameenv <- data.frame(rhoN=getNtcor(sameenv.sample),
                               sd.e=scale(sd.e), dfrac=scale(dfrac),
                               regime=regime.check(main.determ))
 
+#random forest analysis
+
+# randforest.main <- randomForest(rhoN ~ f0 + kB + s0 + kW + cor.ebij + cor.ewij + cor.ebew + sd.e + dfrac, data=sampres.main)
+# varimp.main <- as.numeric(randforest.main$importance)
+# 
+# randforest.nowint <- randomForest(rhoN ~ f0 + kB + cor.ebij + cor.ewij + cor.ebew + sd.e + dfrac, data=sampres.nowint)
+# varimp.nowint <- as.numeric(randforest.nowint$importance)
+# varimp.nowint <- c(varimp.nowint[1:2],NA,NA,varimp.nowint[3:7])
+# 
+# randforest.sameenv <- randomForest(rhoN ~ f0 + kB + s0 + kW + cor.ebij + sd.e + dfrac, data=sampres.sameenv)
+# varimp.sameev <- as.numeric(randforest.sameenv$importance)
+# varimp.sameev <- c(varimp.sameev[1:5], NA, NA, varimp.sameev[6:7])
+# 
+# 
+# param.names <- c(expression(italic('f')[0])
+#                  ,expression(italic('k'['B']))
+#                  ,expression(italic(hat('s'))[0])
+#                  ,expression(italic('k'['W']))
+#                  ,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')'))
+#                  ,expression(paste('cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
+#                  ,expression(paste('cor(',italic(epsilon['b']),',', italic(epsilon['w']),')'))
+#                  ,expression(paste('sd(', italic(epsilon), ')'))
+#                  ,expression(italic('d'))
+#                  #,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')','*\n',
+#                  #                   'cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
+# )
+# 
+# bp<-barplot(varimp.main, plot=FALSE)
+# 
+# par(mfrow=c(3,1), mar=c(1.1,3.6,2.1,1.1), oma=c(4.5,0,0,0))
+# barplot(varimp.main, names.arg=NA)
+# axis(1, at=bp, labels=FALSE, las=2)
+# mtext("Main", cex=2/3, line=0.5)
+# barplot(varimp.nowint, names.arg=NA)
+# axis(1, at=bp, labels=FALSE, las=2)
+# text(x=bp[3:4],y=0,"na",pos=3)
+# mtext("No overwintering", cex=2/3, line=0.5)
+# barplot(varimp.sameev, names.arg=NA)
+# mtext("Same environment", cex=2/3, line=0.5)
+# text(x=bp[6:7],y=0,"na",pos=3)
+# axis(1, at=bp, param.names, las=2)
+
+
 #regression analysis -- undercompensatory
 lm.main.rhoN.uc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + cor.ewij + cor.ebew + sd.e + dfrac,
-                 data=sampres.main[sampres.main$regime=="undercompensatory",], na.action=na.exclude)
+                 data=sampres.main[sampres.main$regime=="undercompensatory" & sampres.main$cor.ebij > sampres.main$cor.ewij,], na.action=na.exclude)
 summary(lm.main.rhoN.uc)
 #hist(resid(lm.main.rhoN))
 #plot(lm.main.rhoN.uc)
 modsumm.main.uc<-summary(lm.main.rhoN.uc)
 
 lm.nowint.rhoN.uc<-lm(rhoN ~ f0 + kB + cor.ebij + cor.ewij + sd.e + dfrac + cor.ebew,
-                   data=sampres.nowint[sampres.nowint$regime=="undercompensatory",], na.action=na.exclude)
+                   data=sampres.nowint[sampres.nowint$regime=="undercompensatory" & sampres.nowint$cor.ebij > sampres.nowint$cor.ewij,], na.action=na.exclude)
 summary(lm.nowint.rhoN.uc)
 #hist(resid(lm.nowint.rhoN))
 #plot(lm.nowint.rhoN.uc)
@@ -198,31 +243,31 @@ summary(lm.sameenv.rhoN.uc)
 modsumm.sameenv.uc<-summary(lm.sameenv.rhoN.uc)
 
 #compile results into a figure
-effects.main.uc <- modsumm.main.uc$coefficients[-1,1]
-effects.main.uc <- as.data.frame(effects.main.uc)
-effects.main.uc$param <- row.names(effects.main.uc)
+effects.main.uc.eb <- modsumm.main.uc$coefficients[-1,1]
+effects.main.uc.eb <- as.data.frame(effects.main.uc.eb)
+effects.main.uc.eb$param <- row.names(effects.main.uc.eb)
 
-effects.sameenv.uc <- modsumm.sameenv.uc$coefficients[-1,1]
-effects.sameenv.uc <- as.data.frame(effects.sameenv.uc)
-effects.sameenv.uc$param <- row.names(effects.sameenv.uc)
+effects.sameenv.uc.eb <- modsumm.sameenv.uc$coefficients[-1,1]
+effects.sameenv.uc.eb <- as.data.frame(effects.sameenv.uc.eb)
+effects.sameenv.uc.eb$param <- row.names(effects.sameenv.uc.eb)
 
-effects.nowint.uc <- modsumm.nowint.uc$coefficients[-1,1]
-effects.nowint.uc <- as.data.frame(effects.nowint.uc)
-effects.nowint.uc$param <- row.names(effects.nowint.uc)
+effects.nowint.uc.eb <- modsumm.nowint.uc$coefficients[-1,1]
+effects.nowint.uc.eb <- as.data.frame(effects.nowint.uc.eb)
+effects.nowint.uc.eb$param <- row.names(effects.nowint.uc.eb)
 
-effects.comb.uc <- left_join(effects.main.uc, effects.nowint.uc)
-effects.comb.uc <- left_join(effects.comb.uc, effects.sameenv.uc)
+effects.comb.uc.eb <- left_join(effects.main.uc.eb, effects.nowint.uc.eb)
+effects.comb.uc.eb <- left_join(effects.comb.uc.eb, effects.sameenv.uc.eb)
 
 
 #regression analysis -- overcompensatory
 lm.main.rhoN.oc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + cor.ewij + cor.ebew + sd.e + dfrac, 
-                    data=sampres.main[sampres.main$regime=="overcompensatory",], na.action=na.exclude)
+                    data=sampres.main[sampres.main$regime=="overcompensatory" & sampres.main$cor.ebij > sampres.main$cor.ewij,], na.action=na.exclude)
 summary(lm.main.rhoN.oc)
 #plot(lm.main.rhoN.oc)
 modsumm.main.oc<-summary(lm.main.rhoN.oc)
 
 lm.nowint.rhoN.oc<-lm(rhoN ~ f0 + kB + cor.ebij + cor.ewij + sd.e + dfrac + cor.ebew,
-                      data=sampres.nowint[sampres.nowint$regime=="overcompensatory",], na.action=na.exclude)
+                      data=sampres.nowint[sampres.nowint$regime=="overcompensatory" & sampres.nowint$cor.ebij > sampres.nowint$cor.ewij,], na.action=na.exclude)
 summary(lm.nowint.rhoN.oc)
 #plot(lm.nowint.rhoN.oc)
 modsumm.nowint.oc<-summary(lm.nowint.rhoN.oc)
@@ -234,31 +279,93 @@ summary(lm.sameenv.rhoN.oc)
 modsumm.sameenv.oc<-summary(lm.sameenv.rhoN.oc)
 
 #compile results into a figure
-effects.main.oc <- modsumm.main.oc$coefficients[-1,1]
-effects.main.oc <- as.data.frame(effects.main.oc)
-effects.main.oc$param <- row.names(effects.main.oc)
+effects.main.oc.eb <- modsumm.main.oc$coefficients[-1,1]
+effects.main.oc.eb <- as.data.frame(effects.main.oc.eb)
+effects.main.oc.eb$param <- row.names(effects.main.oc.eb)
 
-effects.sameenv.oc <- modsumm.sameenv.oc$coefficients[-1,1]
-effects.sameenv.oc <- as.data.frame(effects.sameenv.oc)
-effects.sameenv.oc$param <- row.names(effects.sameenv.oc)
+effects.sameenv.oc.eb <- modsumm.sameenv.oc$coefficients[-1,1]
+effects.sameenv.oc.eb <- as.data.frame(effects.sameenv.oc.eb)
+effects.sameenv.oc.eb$param <- row.names(effects.sameenv.oc.eb)
 
-effects.nowint.oc <- modsumm.nowint.oc$coefficients[-1,1]
-effects.nowint.oc <- as.data.frame(effects.nowint.oc)
-effects.nowint.oc$param <- row.names(effects.nowint.oc)
+effects.nowint.oc.eb <- modsumm.nowint.oc$coefficients[-1,1]
+effects.nowint.oc.eb <- as.data.frame(effects.nowint.oc.eb)
+effects.nowint.oc.eb$param <- row.names(effects.nowint.oc.eb)
 
-effects.comb.oc <- left_join(effects.main.oc, effects.nowint.oc)
-effects.comb.oc <- left_join(effects.comb.oc, effects.sameenv.oc)
+effects.comb.oc.eb <- left_join(effects.main.oc.eb, effects.nowint.oc.eb)
+effects.comb.oc.eb <- left_join(effects.comb.oc.eb, effects.sameenv.oc.eb)
+
+
+## cor.ew > cor.eb
+
+#regression analysis -- undercompensatory
+lm.main.rhoN.uc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + cor.ewij + cor.ebew + sd.e + dfrac,
+                    data=sampres.main[sampres.main$regime=="undercompensatory" & sampres.main$cor.ebij < sampres.main$cor.ewij,], na.action=na.exclude)
+modsumm.main.uc<-summary(lm.main.rhoN.uc)
+
+lm.nowint.rhoN.uc<-lm(rhoN ~ f0 + kB + cor.ebij + cor.ewij + sd.e + dfrac + cor.ebew,
+                      data=sampres.nowint[sampres.nowint$regime=="undercompensatory" & sampres.nowint$cor.ebij < sampres.nowint$cor.ewij,], na.action=na.exclude)
+modsumm.nowint.uc<-summary(lm.nowint.rhoN.uc)
+
+lm.sameenv.rhoN.uc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + sd.e + dfrac,
+                       data=sampres.sameenv[sampres.sameenv$regime=='undercompensatory',], na.action=na.exclude)
+modsumm.sameenv.uc<-summary(lm.sameenv.rhoN.uc)
+
+#compile results into a figure
+effects.main.uc.ew <- modsumm.main.uc$coefficients[-1,1]
+effects.main.uc.ew <- as.data.frame(effects.main.uc.ew)
+effects.main.uc.ew$param <- row.names(effects.main.uc.ew)
+
+effects.sameenv.uc.ew <- modsumm.sameenv.uc$coefficients[-1,1]
+effects.sameenv.uc.ew <- as.data.frame(effects.sameenv.uc.ew)
+effects.sameenv.uc.ew$param <- row.names(effects.sameenv.uc.ew)
+
+effects.nowint.uc.ew <- modsumm.nowint.uc$coefficients[-1,1]
+effects.nowint.uc.ew <- as.data.frame(effects.nowint.uc.ew)
+effects.nowint.uc.ew$param <- row.names(effects.nowint.uc.ew)
+
+effects.comb.uc.ew <- left_join(effects.main.uc.ew, effects.nowint.uc.ew)
+effects.comb.uc.ew <- left_join(effects.comb.uc.ew, effects.sameenv.uc.ew)
+
+
+#regression analysis -- overcompensatory
+lm.main.rhoN.oc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + cor.ewij + cor.ebew + sd.e + dfrac, 
+                    data=sampres.main[sampres.main$regime=="overcompensatory" & sampres.main$cor.ebij < sampres.main$cor.ewij,], na.action=na.exclude)
+modsumm.main.oc<-summary(lm.main.rhoN.oc)
+
+lm.nowint.rhoN.oc<-lm(rhoN ~ f0 + kB + cor.ebij + cor.ewij + sd.e + dfrac + cor.ebew,
+                      data=sampres.nowint[sampres.nowint$regime=="overcompensatory" & sampres.nowint$cor.ebij < sampres.nowint$cor.ewij,], na.action=na.exclude)
+modsumm.nowint.oc<-summary(lm.nowint.rhoN.oc)
+
+lm.sameenv.rhoN.oc<-lm(rhoN ~ f0 + kB + s0 + kW + cor.ebij + sd.e + dfrac,
+                       data=sampres.sameenv[sampres.sameenv$regime=='overcompensatory',], na.action=na.exclude)
+modsumm.sameenv.oc<-summary(lm.sameenv.rhoN.oc)
+
+#compile results into a figure
+effects.main.oc.ew <- modsumm.main.oc$coefficients[-1,1]
+effects.main.oc.ew <- as.data.frame(effects.main.oc.ew)
+effects.main.oc.ew$param <- row.names(effects.main.oc.ew)
+
+effects.sameenv.oc.ew <- modsumm.sameenv.oc$coefficients[-1,1]
+effects.sameenv.oc.ew <- as.data.frame(effects.sameenv.oc.ew)
+effects.sameenv.oc.ew$param <- row.names(effects.sameenv.oc.ew)
+
+effects.nowint.oc.ew <- modsumm.nowint.oc$coefficients[-1,1]
+effects.nowint.oc.ew <- as.data.frame(effects.nowint.oc.ew)
+effects.nowint.oc.ew$param <- row.names(effects.nowint.oc.ew)
+
+effects.comb.oc.ew <- left_join(effects.main.oc.ew, effects.nowint.oc.ew)
+effects.comb.oc.ew <- left_join(effects.comb.oc.ew, effects.sameenv.oc.ew)
 
 
 #saveRDS(effects.comb.uc, file="~/GitHub/synchrony-seasonality/sim_sensitivity_undercompensatory.RDS")
 
 param.names <- c(expression(italic('f')[0])
                  ,expression(italic('k'['B']))
-                 ,expression(italic('s')[0])
+                 ,expression(italic(hat('s'))[0])
                  ,expression(italic('k'['W']))
-                 ,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')'))
-                 ,expression(paste('cor(',italic(epsilon['wi']),',', italic(epsilon['wj']),')'))
-                 ,expression(paste('cor(',italic(epsilon['b']),',', italic(epsilon['w']),')'))
+                 ,expression(paste('cor(',italic(epsilon['B,i']),',', italic(epsilon['B,j']),')'))
+                 ,expression(paste('cor(',italic(epsilon['W,i']),',', italic(epsilon['W,j']),')'))
+                 ,expression(paste('cor(',italic(epsilon['B']),',', italic(epsilon['W']),')'))
                  ,expression(paste('sd(', italic(epsilon), ')'))
                  ,expression(italic('d'))
                  #,expression(paste('cor(',italic(epsilon['bi']),',', italic(epsilon['bj']),')','*\n',
@@ -266,26 +373,45 @@ param.names <- c(expression(italic('f')[0])
                  )
 
 
-b <- barplot(t(as.matrix(effects.comb.uc[,-2])), beside=T, plot=FALSE)
+b <- barplot(t(as.matrix(effects.comb.uc.eb[,-2])), beside=T, plot=FALSE, space=c(0,0.9))
 pal <- c("grey20","grey80","grey90")
 
-png("figX_simsensitivity_barplot.png", units="in", res=300, width=5.5, height=6)
+png("figX_simsensitivity_barplot.png", units="in", res=300, width=6.5, height=6)
 
-par(mfrow=c(2,1), mar=c(5.3,4.1,1.6,1.1), mgp=c(2.8,0.8,0))
+par(mfcol=c(2,2), mar=c(5.6,2.3,1.6,0.5), mgp=c(2.8,0.8,0), oma=c(0,1.1,0,0))
 
-barplot(t(as.matrix(effects.comb.uc[,-2])), beside=T, names.arg=param.names,
-        legend.text=c("main", "no overwintering", "same environment"), ylim=c(-0.1,0.22),
-        args.legend=list(x="topleft",bty="n",cex=0.9), las=2, ylab="Effect size", col=pal)
-mtext("Undercompensatory", line=0.5)
-text(x=c(10.5, 14.5, 23.5, 27.5), y=0, "na", cex=0.5, pos=3, offset=0)
+barplot(t(as.matrix(effects.comb.uc.eb[,-2])), beside=T, names.arg=param.names,
+        legend.text=c("main", "no overwintering", "same environ."), ylim=c(-0.15,0.3),
+        args.legend=list(x="topleft",bty="n",cex=0.9), las=2, ylab="", col=pal, space=c(0,0.9))
+mtext(expression(paste('Undercompensatory, ','cor(',italic(epsilon['B,i']),',', italic(epsilon['B,j']),')','>cor(',italic(epsilon['W,i']),',', italic(epsilon['W,j']),')'))
+      , line=0.5, cex=2/3)
+mtext("a)", at=0, cex=2/3, line=0.5)
+text(x=c(b[2,3:4],b[3,6:7]), y=0, "na", cex=0.4, pos=3, offset=0)
+
+barplot(t(as.matrix(effects.comb.oc.eb[,-2])), beside=T, names.arg=param.names, 
+        las=2, ylim=c(-0.15,0.3), ylab="", col=pal, space=c(0,0.9))
+mtext(expression(paste('Overcompensatory, ','cor(',italic(epsilon['B,i']),',', italic(epsilon['B,j']),')','>cor(',italic(epsilon['W,i']),',', italic(epsilon['W,j']),')'))
+      , line=0.5, cex=2/3)
+mtext("b)", at=0, cex=2/3, line=0.5)
+text(x=c(b[2,3:4],b[3,6:7]), y=0, "na", cex=0.4, pos=3, offset=0)
 
 
-barplot(t(as.matrix(effects.comb.oc[,-2])), beside=T, names.arg=param.names, 
-        las=2, ylim=c(-0.1,0.22), ylab="Effect size", col=pal)
-mtext("Overcompensatory", line=0.5)
-text(x=c(10.5, 14.5, 23.5, 27.5), y=0, "na", cex=0.5, pos=3, offset=0)
-        #legend.text=c("main", "same environment", "no overwintering"),
-        #args.legend=list(x="topleft",bty="n"), las=2, main = "overcompensatory dynamics")
+barplot(t(as.matrix(effects.comb.uc.ew[,-2])), beside=T, names.arg=param.names,
+        ylim=c(-0.15,0.3), space=c(0,0.9),
+        args.legend=list(x="topleft",bty="n",cex=0.9), las=2, ylab="", col=pal)
+mtext(expression(paste('Undercompensatory, ','cor(',italic(epsilon['W,i']),',', italic(epsilon['W,j']),')','>cor(',italic(epsilon['B,i']),',', italic(epsilon['B,j']),')'))
+      , line=0.5, cex=2/3)
+mtext("c)", at=0, cex=2/3, line=0.5)
+text(x=c(b[2,3:4],b[3,6:7]), y=0, "na", cex=0.4, pos=3, offset=0)
+
+barplot(t(as.matrix(effects.comb.oc.ew[,-2])), beside=T, names.arg=param.names, 
+        las=2, ylim=c(-0.15,0.3), ylab="", col=pal, space=c(0,0.9))
+mtext(expression(paste('Overcompensatory, ','cor(',italic(epsilon['W,i']),',', italic(epsilon['W,j']),')','>cor(',italic(epsilon['B,i']),',', italic(epsilon['B,j']),')'))
+      , line=0.5, cex=2/3)
+text(x=c(b[2,3:4],b[3,6:7]), y=0, "na", cex=0.4, pos=3, offset=0)
+mtext("d)", at=0, cex=2/3, line=0.5)
+
+mtext("Effect size (standardized regression coefficient)", side=2, outer=TRUE, cex=0.9)
 
 dev.off()
 
