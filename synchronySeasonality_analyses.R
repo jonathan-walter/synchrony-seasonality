@@ -111,10 +111,45 @@ analytical.solution<-function(f0, kB, s0, kW, cor.ebij, cor.ewij, cor.ebew, sd.e
 }
 
 
+# #check stability
+# stability.check <- function(f0,kB,s0,kW){
+#   rate <- function(N){
+#     exp(f0)*exp(-N/kB) * exp(s0)*exp(-(N*exp(f0)*exp(-N/kB))/kW) - 1
+#   }
+#   
+#   Eq <- uniroot.all(rate, c(1, max(c(kB,kW))*1.5))
+#   
+#   #test stability of equilibrium
+#   eig <- vector()
+#   for (i in 1:length(Eq)){
+#     eig[i] <- sign (gradient(rate, Eq[i]))
+#   }
+#   
+#   if(!any(eig==-1)){
+#     stop("No stable equilibria between N=1 and N=1.5*max(kB, kW)")
+#   }
+#   
+#   Neq <- Eq[eig==-1] #take the stable equilibrium if multiple
+#   
+#   g <- expression(Neq*exp(f0)*exp(-Neq/kB)*exp(eB)*
+#                     exp(s0)*exp(-(Neq*exp(f0)*exp(-Neq/kB)*exp(eB))/kW)*exp(eW))
+#   dgdN <- D(g, 'N')
+#   eB <- eW <- 0
+#   PA <- as.numeric(eval(dgdN))
+#   
+#   return(PA)
+# }
+
+
 ## Analytical stuff (to be populated from LGS code) -----------------------------------------------
 
 
 ## Simulation -- sensitivity of synchrony to model parameters -------------------------------------
+
+test <- simmod_main(tmax=500, f0=2.45, kB=200, s0=-1, kW=200, cor.ebij=0.25, cor.ewij=0.25, cor.ebew=0.1,
+                    sd.e=0.1, dfrac=0)
+
+plot(test$Nt[-c(1:100),1], type="l")
 
 # nn<-300
 # set.seed(666)
@@ -133,6 +168,8 @@ sd.e=qunif(hypercube[,7],0,0.1)
 dfrac=qunif(hypercube[,8],0,0.2)
 cor.ebew=qunif(hypercube[,9],-0.5,0.5)
 cor.eij <- cor.ebij
+
+#stability.check(f0=2.45,kB=200,kW=200,s0=-1)
 
 tmax=10000
 burn=1000

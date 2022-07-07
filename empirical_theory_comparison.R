@@ -255,7 +255,9 @@ for(xx in 1:length(cor.ebij)) {
 
 ### Plotting
 
-quartz(height=6, width=4)
+#quartz(height=6, width=4)
+pdf("sim_analysis_comparison.pdf", height=6, width=4)
+
 pal<-colorRampPalette(colors=c("red","white","blue"))
 par(mfrow=c(3,2), mar=c(1,.5,.5,.5), mgp=c(2.7,0.5,0), tcl=-0.3, oma=c(3,3,3,1))
 # sim 1
@@ -319,4 +321,4 @@ mtext(expression(paste("Spatial synchrony of overwintering season environment ("
 mtext(expression(paste("Analytical")), 3, outer=T, cex=1, line=.3, adj=.2)
 mtext(expression(paste("Simuation")), 3, outer=T,cex=1, line=.5, adj=.85)
 
-
+dev.off()

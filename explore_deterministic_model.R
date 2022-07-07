@@ -40,10 +40,10 @@ simmod_det<-function(tmax, f0, kB, s0, kW, getBt=FALSE){
 
 ## simulate some stuff
 tmax = 100
-f0 = 2.1
-kB = 100
-s0 = -0.1
-kW = 80
+f0 = 2.45
+kB = 200
+s0 = 0
+kW = 160
 
 
 sim <- simmod_det(tmax, f0, kB, s0, kW)
